@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 import './card.css'
 
-export const Card = ({ children, ...rest }) => (
+export const Card = ({ children, className = '', ...rest }) => (
   <motion.div
     initial={{ y: 50, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
@@ -12,7 +12,7 @@ export const Card = ({ children, ...rest }) => (
       animate: { type: 'spring', stiffness: 600 }
     }}
 
-    className='card'
+    className={`card ${className}`}
     {...rest}
   >
     {children}

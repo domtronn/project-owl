@@ -8,6 +8,8 @@ import { Card } from '../common/components/card'
 import { Comment } from '../common/components/comment'
 import { Toggle } from '../common/components/toggle'
 
+import CommentCard from '../common/components/comment-card'
+
 chrome.runtime.sendMessage({}, (response) => {
   var checkReady = setInterval(() => {
     if (document.readyState === "complete") {
@@ -129,28 +131,20 @@ const Login = () => {
                 delay={i / 5}
                 key={i}
               >
-                <Card>
-                  {
+                <CommentCard
+                  onSubmit={e => {
+                    debugger;
+                    console.log(e.target)
+                  }}
+                  comments={
                     comments
                       .map(i => db.comments[i])
-                      .map(({ user, time, content }, i) => (
-                        <>
-                          <Comment
-                            key={`comment-${i}`}
-                            img={db.users[user].avatar}
-                            title={db.users[user].name}
-                            subtitle={time}
-                          />
-                          <p className='t t__sm'>
-                            {content}
-                          </p>
-                          {i !== (comments.length - 1) && (
-                            <hr />
-                          )}
-                        </>
-                      ))
+                      .map(({ user, ...o }) => ({
+                        ...o,
+                        user: db.users[user]
+                      }))
                   }
-                </Card>
+                />
               </Bubble>
             )
           })
