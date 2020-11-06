@@ -31,11 +31,11 @@
 .commentable .toggle__slider:before {
   position: absolute;
   content: "";
-  height: 30px;
-  width: 30px;
+  height: 26px;
+  width: 26px;
   border-radius: 50%;
-  left: 4px;
-  bottom: 4px;
+  left: 6px;
+  bottom: 6px;
 
   background-color: var(--primary);
 }

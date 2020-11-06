@@ -19,6 +19,7 @@ const ChatForm = ({
     <form
       onSubmit={e => {
         e.preventDefault()
+        setComment('')
         onSubmit(comment)
       }}
     >
@@ -34,8 +35,8 @@ const ChatForm = ({
         {
           comment.length > 0 && (
             <motion.div
-              style={{ overflow: 'hidden' }}
-              animate={{ height: 48 }}
+              style={{ overflowY: 'hidden' }}
+              animate={{ height: 48 + 8 }}
               initial={{ height: 0 }}
               exit={{ height: 0 }}
             >
@@ -93,6 +94,6 @@ const WithComments = ({ comments, onSubmit }) => (
 export default ({ comments = [], onSubmit = _ => _ }) => (
   <Card className="commentcard">
     {comments.length && <WithComments onSubmit={onSubmit} comments={comments} />}
-    {!comments.length && <NoComments onSubmit={onSubmit} />}
+    {comments.length === 0 && <NoComments onSubmit={onSubmit} />}
   </Card>
 )

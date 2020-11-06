@@ -6,8 +6,8 @@ export const Toggle = ({
   initial = false,
   onClick = _ => _,
   onToggle = _ => _,
-  onToggleOn = () => _,
-  onToggleOff = () => _,
+  onToggleOn = () => {},
+  onToggleOff = () => {},
 }) => {
   const [state, setState] = React.useState(initial)
 

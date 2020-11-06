@@ -8,7 +8,14 @@ import { Card } from '../common/components/card'
 import { Comment } from '../common/components/comment'
 import { Toggle } from '../common/components/toggle'
 
+import { v4 as uuid } from 'uuid'
+
 import CommentCard from '../common/components/comment-card'
+
+const normalise = (x, viewport) => {
+  const diff = viewport - window.outerWidth
+  return x - (diff / 2)
+}
 
 chrome.runtime.sendMessage({}, (response) => {
   var checkReady = setInterval(() => {
@@ -57,16 +64,19 @@ const database = {
         {
           pageX: 50,
           pageY: 320,
+          viewPort: 1054,
           comments: [1, 2, 3]
         },
         {
           pageX: 980,
           pageY: 520,
+          viewPort: 1054,
           comments: [1, 2, 3]
         },
         {
           pageX: 180,
           pageY: 1220,
+          viewPort: 1054,
           comments: [1, 2, 3]
         }
       ]
@@ -75,11 +85,14 @@ const database = {
 }
 
 const Login = () => {
-  const [db, setDb] = React.useState(database)
-  const [conversations, setConversations] = React.useState(db.pages['https://www.google.com/'].conversations)
+  const [db] = React.useState(database)
+
+  const [__conversations, setConversations] = React.useState(db.pages['https://www.google.com/'].conversations)
+  const [__comments, setComments] = React.useState(db.comments)
+
   const [state, setState] = React.useState(false)
 
-  console.log(conversations)
+  console.log(__comments, __conversations)
 
   return (
     <div>
@@ -87,9 +100,13 @@ const Login = () => {
         <div
           onMouseDown={e => {
             const { pageX, pageY } = e
+            const { outerWidth } = window
             setConversations(
-              conversations.concat({
-                pageX, pageY, comments: []
+              __conversations.concat({
+                pageX,
+                pageY,
+                viewPort: outerWidth,
+                comments: []
               })
             )
           }}
@@ -122,23 +139,39 @@ const Login = () => {
       </Card>
 
       {
-        conversations
-          .map(({ pageX, pageY, comments }, i) => {
+        __conversations
+          .map(({ pageX, pageY, viewPort, comments }, i) => {
             return (
               <Bubble
-                x={pageX}
+                x={normalise(pageX, viewPort)}
                 y={pageY}
                 delay={i / 5}
                 key={i}
               >
                 <CommentCard
-                  onSubmit={e => {
-                    debugger;
-                    console.log(e.target)
+                  onSubmit={content => {
+                    const commentId = uuid()
+                    const comment = {
+                      time: (new Date()).toISOString(),
+                      content,
+                      user: 1
+                    }
+
+                    setComments({
+                      ...__comments,
+                      [commentId]: comment
+                    })
+
+                    setConversations(
+                      __conversations.map((c, j) => {
+                        if (i !== j) return c
+                        return { ...c, comments: c.comments.concat(commentId) }
+                      })
+                    )
                   }}
                   comments={
                     comments
-                      .map(i => db.comments[i])
+                      .map(i => __comments[i])
                       .map(({ user, ...o }) => ({
                         ...o,
                         user: db.users[user]
