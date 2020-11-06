@@ -1,0 +1,92 @@
+:root {
+  --primary: #ff3d46;
+  --primary-darken: #EE1A24;
+  --light: #f5f5f5;
+  --light-darken: #ebebeb;
+
+  --black: #000;
+  --white: #fff;
+  --grey: #666;
+  --lightgrey: #b2b2b2;
+
+  --t-sm: 12px;
+  --t-rg: 14px;
+  --t-md: 16px;
+  --t-lg: 20px;
+}
+
+.commentable * {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.commentable h1,
+.commentable h2,
+.commentable h3,
+.commentable h4,
+.commentable h5,
+.commentable h6
+{
+  font-weight: 600; color: var(--black);
+}
+
+.commentable h1 { font-size: 48px; line-height: 56px; }
+.commentable h2 { font-size: 40px; line-height: 48px; }
+.commentable h3 { font-size: 32px; line-height: 40px; }
+.commentable h4 { font-size: 24px; line-height: 32px; }
+
+/** Body text styling */
+.commentable .t,
+.commentable p
+{
+  margin: 0;
+  color: var(--black);
+}
+.commentable .t__xs { font-size: var(--t-sm); }
+.commentable .t__sm { font-size: var(--t-rg); }
+.commentable .t__xs, .commentable .t__sm
+{
+  line-height: 16px;
+}
+
+.commentable h5,
+.commentable .t__lg
+{
+  font-size: var(--t-lg);
+  line-height: 24px;
+}
+.commentable h6,
+.commentable .t__md {
+  font-size: var(--t-md);
+  line-height: 20px;
+}
+
+.commentable .t--bold { font-weight: 600; }
+
+/** Link text styling */
+.commentable a,
+.commentable .l,
+.commentable .l__md {
+  font-size: var(--t-rg);
+  line-height: 20px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.commentable a:hover,
+.commentable .l:hover,
+.commentable .l__sm:hover,
+.commentable .l__md:hover,
+.commentable .l__lg:hover {
+  cursor: pointer;
+  border-bottom: 1px solid var(--primary);
+}
+
+.commentable .l__lg { font-size: var(--t-md); line-height: 24px; }
+.commentable .l__sm { font-size: var(--t-sm); line-height: 16px; }
+
+.commentable hr {
+  background-color: var(--light);
+  height: 1px;
+  border: 0;
+  margin: 20px auto;
+}

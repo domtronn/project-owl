@@ -1,0 +1,27 @@
+.commentable .comment {
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.commentable .comment__img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.commentable .comment__img,
+.commentable .comment__content
+{
+  vertical-align: top;
+  display: inline-block;
+}
+
+.commentable .comment__content * {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: 16px;
+}
+
+.commentable .comment__content > p { color: var(--black); }
+.commentable .comment__content > p + p { color: var(--lightgrey); }

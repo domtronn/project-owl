@@ -1,0 +1,78 @@
+/* Text sizings */
+h5, em, a, p { margin: 0; }
+
+em, h5 {
+  font-size: var(--t-lg);
+  line-height: 24px;
+}
+
+button, input {
+  font-size: var(--t-md);
+  line-height: 24px;
+}
+
+a {
+  font-size: var(--t-sm);
+  font-weight: 400;
+}
+
+p {
+  font-size: var(--t-rg);
+  font-weight: 400;
+  line-height: 20px;
+}
+
+
+em { font-weight: 700; font-style: initial; }
+h5, button { font-weight: 600; }
+
+/* Text colors */
+h5, button {
+  color: var(--black);
+}
+
+p {
+  color: var(--grey);
+}
+
+em, a {
+  color: var(--primary);
+}
+
+button, input {
+  width: 100%;
+  display: block;
+  min-height: 48px;
+  border-radius: 4px;
+}
+
+input {
+  width: calc(100% - 32px);
+  padding: 0 16px;
+  background-color: var(--light);
+  color: var(--grey);
+}
+
+button {
+  color: var(--black);
+  background-color: var(--light);
+}
+
+.btn--primary {
+  color: var(--white);
+  background-color: var(--primary);
+}
+
+/* Body styles */
+body {
+  border-radius: 8px;
+  min-width: 328px;
+  text-align: center;
+  padding: 16px;
+}
+
+/* Spacing */
+h5 { margin: 32px 0 8px; }
+input, button { margin-bottom: 8px; }
+p + *, a + button, button + p { margin-top: 32px; }
+a { margin: 0 8px; }

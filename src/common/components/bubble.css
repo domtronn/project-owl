@@ -1,0 +1,20 @@
+.commentable .bubble {
+  position: absolute;
+
+  margin-left: -16px;
+  margin-top: -16px;
+
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+
+  background-color: var(--primary);
+  border: 8px solid var(--white);
+  box-sizing: border-box;
+
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.75);
+}
+
+.commentable .bubble:hover {
+  cursor: pointer;
+}
