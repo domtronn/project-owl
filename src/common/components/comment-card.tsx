@@ -24,6 +24,7 @@ const ChatForm = ({
       }}
     >
       <Input
+        autoFocus
         type="text"
         name="comment"
         placeholder={`${placeholder.replace(/\.\.\.$/, '')}`}
@@ -74,9 +75,14 @@ const WithComments = ({ comments, onSubmit }) => (
               subtitle={time}
             />
 
-            <p className='t t__sm'>
-              {content}
-            </p>
+            {[]
+              .concat(content)
+              .map(c => (
+                <p className='t t__sm'>
+                  {c}
+                </p>
+              ))
+            }
 
             {i !== comments.length - 1 && <hr />}
           </div>

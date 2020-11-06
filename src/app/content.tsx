@@ -172,6 +172,23 @@ const Login = () => {
                   comments={
                     comments
                       .map(i => __comments[i])
+                      .reduce((acc, it) => {
+                        /**
+                         * TODO: Tidy this up but essentially group consecutive
+                         * user comments together into a single "comment"
+                         */
+                        const front = acc.slice(0, -1)
+                        const [last] = acc.slice(-1)
+
+                        if (!last) return acc.concat(it)
+                        if (last.user !== it.user) return acc.concat(it)
+
+                        const content = []
+                              .concat(last.content)
+                              .concat(it.content)
+
+                        return front.concat({ ...it, content })
+                      }, [])
                       .map(({ user, ...o }) => ({
                         ...o,
                         user: db.users[user]
