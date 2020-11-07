@@ -32,14 +32,14 @@ const Popup = () => {
     chrome.runtime.onMessage.addListener((message) => {
       switch (message.type) {
       case 'GOOGLE_USER':
-        setUser(message.user)
+        setUser(message.user || {})
         setState(states.COMPLETE)
         break
       }
     })
 
     chrome.runtime.sendMessage({ type: 'GET_USER' }, user => {
-      setUser(user)
+      setUser(user || {})
       setState(user ? states.COMPLETE : states.LOGIN)
     })
   }, [])
@@ -47,17 +47,6 @@ const Popup = () => {
   return (
     <>
       <em>commentable</em>
-
-      <Button
-        variant='primary'
-        onClick={_ => {
-          chrome
-            .runtime
-            .sendMessage({ type: 'GOOGLE_AUTH_USER' })
-        }}
-      >
-        Sign in with Google
-      </Button>
 
       {state === states.LOGIN && (
         <Login

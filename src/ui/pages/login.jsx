@@ -7,6 +7,7 @@ import 'firebase/firestore'
 
 import { Button } from '../../common/components/button'
 import { Input } from '../../common/components/input'
+import { SiGoogle as Google } from 'react-icons/si'
 
 const ResetSent = ({
   goLogin = _ => _
@@ -177,11 +178,23 @@ export default ({
       )}
 
       {state === states.LOGIN && (
-        <Button
-          onClick={onRegister}
-        >
-          I don't have an account
-        </Button>
+        <>
+          <Button
+            onClick={onRegister}
+          >
+            I don't have an account
+          </Button>
+          <Button
+            onClick={_ => {
+              chrome
+                .runtime
+                .sendMessage({ type: 'GOOGLE_AUTH_USER' })
+            }}
+          >
+            Sign in with
+            <Google style={{ marginBottom: -2, marginLeft: 6 }} />
+          </Button>
+        </>
       )}
     </>
   )

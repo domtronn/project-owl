@@ -30,6 +30,7 @@
     "framer-motion": "^2.9.4",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
+    "react-icons": "^3.11.0",
     "uuid": "^8.3.1"
   }
 }
