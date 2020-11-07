@@ -19,13 +19,19 @@ export const Bubble = ({ x, y, children, delay = 0 }) => {
       </AnimatePresence>
 
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        variants={{
+          hidden: { y: 20, opacity: 0 },
+          show: { y: 0, opacity: 1 }
+        }}
 
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
 
-        transition={{ type: 'spring', stiffness: 600 }}
+        transition={{
+          default: { delay },
+          scale: { delay: 0 },
+          type: 'spring',
+          stiffness: 600 }}
 
         onClick={setopen.bind(this, !isopen)}
         style={{ top: y, left: x }}

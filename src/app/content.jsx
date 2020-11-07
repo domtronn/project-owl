@@ -1,6 +1,8 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom"
 
+import { motion } from 'framer-motion'
+
 import "../common/root.css"
 
 import 'firebase/auth'
@@ -252,23 +254,19 @@ const ContentV2 = () => {
   }, [])
 
   return (
-    <div>
-      <pre
-        style={{
-          zIndex: -300,
-          color: 'rgba(0,0,0,0.2)',
-          position: 'fixed',
-          textAlign: 'left',
-          top: 32,
-          left: 32
-        }}
-      >
-        {JSON.stringify(me, null, 2)}
-        {JSON.stringify(page, null, 2)}
-        {JSON.stringify(threads, null, 2)}
-      </pre>
+    <motion.div
+      variants={{
+        hidden: { opacity: 0 },
+        show: {
+          opacity: 1,
+          transition: { staggerChildren: 0.5 }
+        }
+      }}
+      initial='hidden'
+      animate='show'
+    >
 
-      {state && (
+      {state === states.EDIT && (
         <div
           onMouseDown={e => {
             const { pageX, pageY } = e
@@ -302,11 +300,11 @@ const ContentV2 = () => {
         }}
       >
         <p style={{ marginBottom: 8 }}>
-          {state === states.EDIT && 'View mode'}
-          {state === states.VIEW && 'Edit mode'}
+          {state === states.VIEW && 'View mode'}
+          {state === states.EDIT && 'Edit mode'}
         </p>
         <Toggle
-          initial={state}
+          initial={state === state.EDIT}
           onToggle={() => setState(
             state === states.EDIT
               ? states.VIEW
@@ -320,15 +318,15 @@ const ContentV2 = () => {
           .map(({ pageX, pageY, pageWidth, comments }, i) => {
             return (
               <Bubble
+                delay={i / 10}
                 x={normalise(pageX, pageWidth)}
                 y={pageY}
-                delay={i / 5}
                 key={i}
               />
             )
           })
       }
-    </div>
+    </motion.div>
   )
 }
 
