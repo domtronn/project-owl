@@ -29,6 +29,15 @@ const Popup = () => {
   const [user, setUser] = React.useState()
 
   React.useEffect(() => {
+    chrome.runtime.onMessage.addListener((message) => {
+      switch (message.type) {
+      case 'GOOGLE_USER':
+        setUser(message.user)
+        setState(states.COMPLETE)
+        break
+      }
+    })
+
     chrome.runtime.sendMessage({ type: 'GET_USER' }, user => {
       setUser(user)
       setState(user ? states.COMPLETE : states.LOGIN)
@@ -38,6 +47,18 @@ const Popup = () => {
   return (
     <>
       <em>commentable</em>
+
+      <Button
+        variant='primary'
+        onClick={_ => {
+          chrome
+            .runtime
+            .sendMessage({ type: 'GOOGLE_AUTH_USER' })
+        }}
+      >
+        Sign in with Google
+      </Button>
+
       {state === states.LOGIN && (
         <Login
           onRegister={_ => setState(states.REGISTER)}
@@ -54,7 +75,6 @@ const Popup = () => {
 
       {state === states.COMPLETE && (
         <>
-
           {user.emailVerified && (
             <>
               <p>You're logged in and everything is good!</p>

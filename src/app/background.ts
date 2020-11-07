@@ -3,15 +3,18 @@ import { firebase } from "../common/firebase"
 import "firebase/auth"
 import "firebase/firestore"
 
+import getUser from './bg-handlers/get-user'
+import googleAuthUser from './bg-handlers/google-auth-user'
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
     case 'GET_USER':
-      const user = firebase
-        .auth()
-        .currentUser
+      getUser({ sendResponse })
+      break
 
-      user.reload()
-      return sendResponse(user)
+    case 'GOOGLE_AUTH_USER':
+      googleAuthUser({ chrome })
+      break
 
     case 'VERIFY_USER':
       console.log('VERIFY_USER // Got request to verify users email address')
@@ -19,7 +22,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .auth()
         .currentUser
         .sendEmailVerification()
-      return sendResponse()
+
+      return sendResponse('Sent email verification')
 
     default:
       return sendResponse('Unknown request')
@@ -31,20 +35,5 @@ window.onload = () => {
     .auth()
     .onAuthStateChanged(user => {
       console.log('user', user)
-    })
-
-  chrome
-    .identity
-    .getAuthToken({ interactive: true }, token => {
-      const credential = firebase
-      .auth
-      .GoogleAuthProvider
-      .credential(null, token)
-
-      console.log('credential', credential)
-
-      firebase
-      .auth()
-      .signInWithCredential(credential)
     })
 }

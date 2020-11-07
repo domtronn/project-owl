@@ -86,7 +86,7 @@ const Login = ({
       />
 
       <Input
-        requried
+        required
         onChange={e => onPasswordChange(e.target.value)}
         value={password}
         name='password'

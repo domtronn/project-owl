@@ -42,8 +42,6 @@ export default ({
               onRegisterSuccess({ ...user, name, handle: username })
             })
             .catch(error => {
-              console.log(error.code)
-              console.log(error.message)
             })
         }}
       >
