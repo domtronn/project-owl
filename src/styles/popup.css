@@ -50,7 +50,18 @@ input {
   width: calc(100% - 32px);
   padding: 0 16px;
   background-color: var(--light);
+  color: var(--black);
+  outline: none;
+  margin-left: -1px;
+  border: 1px solid var(--white);
+}
+
+input::placeholder {
   color: var(--grey);
+}
+
+input:focus {
+  border: 1px solid var(--primary);
 }
 
 button {

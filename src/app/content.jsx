@@ -17,6 +17,7 @@ const normalise = (x, viewport) => {
   return x - (diff / 2)
 }
 
+
 chrome.runtime.sendMessage({}, (response) => {
   var checkReady = setInterval(() => {
     if (document.readyState === "complete") {
@@ -87,12 +88,13 @@ const database = {
 const Login = () => {
   const [db] = React.useState(database)
 
-  const [__conversations, setConversations] = React.useState(db.pages['https://www.google.com/'].conversations)
-  const [__comments, setComments] = React.useState(db.comments)
+  const [__page] = React.useState(db.pages[window.location.href] || {})
+  const [__conversations, setConversations] = React.useState(__page.conversations || [])
+  const [__comments, setComments] = React.useState(db.comments || [])
 
+  console.log('what')
+  
   const [state, setState] = React.useState(false)
-
-  console.log(__comments, __conversations)
 
   return (
     <div>

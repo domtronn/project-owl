@@ -1,42 +1,12 @@
 import * as React from "react"
-import * as ReactDOM from "react-dom"
 
-import "../common/root.css"
-import "../styles/normalise.css"
-import "../styles/popup.css"
+import { Comment } from '../common/components/comment.jsx'
+import { Bubble } from '../common/components/bubble.jsx'
+import { Button } from '../common/components/button.jsx'
+import { Card } from '../common/components/card.jsx'
+import { Toggle } from '../common/components/toggle.jsx'
 
-import { Comment } from '../common/components/comment.tsx'
-import { Bubble } from '../common/components/bubble.tsx'
-import { Button } from '../common/components/button.tsx'
-import { Card } from '../common/components/card.tsx'
-import { Toggle } from '../common/components/toggle.tsx'
-
-
-const Login = () => (
-  <>
-    <em>commentable</em>
-
-    <h5>Make your mark</h5>
-    <p>Comment on anything on the web</p>
-
-    <input type="email" placeholder="Email" />
-    <input type="password" placeholder="Password" />
-    <button className="btn btn--primary">
-      Login
-    </button>
-    <a>Forgotten password?</a>
-
-    <button className="btn">
-      I don't have an account
-    </button>
-    <p>
-      <a>Terms</a>
-      <a>Privacy</a>
-    </p>
-  </>
-)
-
-const Popup = () => (
+export const DesignSystem = () => (
   <>
     <h1>Heading 1</h1>
     <h2>Heading 2</h2>
@@ -90,10 +60,4 @@ const Popup = () => (
       subtitle="Today at 12:03am"
     />
   </>
-)
-
-// --------------
-ReactDOM.render(
-  <Popup />,
-  document.getElementById('root')
 )

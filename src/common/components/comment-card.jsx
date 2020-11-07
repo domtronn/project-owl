@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { Card } from './card.tsx'
-import { Button } from './button.tsx'
-import { Input } from './input.tsx'
-import { Comment } from './comment.tsx'
+import { Card } from './card.jsx'
+import { Button } from './button.jsx'
+import { Input } from './input.jsx'
+import { Comment } from './comment.jsx'
 
 import './comment-card.css'
 
@@ -42,8 +42,8 @@ const ChatForm = ({
               exit={{ height: 0 }}
             >
               <Button
-                type="submit"
-                variant="primary"
+                type='submit'
+                variant='primary'
               >
                 {submit}
               </Button>
@@ -90,9 +90,9 @@ const WithComments = ({ comments, onSubmit }) => (
     }
 
     <ChatForm
-      submit="Post"
+      submit='Post'
       onSubmit={onSubmit}
-      placeholder="Reply"
+      placeholder='Reply'
     />
   </>
 )

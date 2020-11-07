@@ -21,6 +21,12 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-react": "^7.12.5",
+    "babel-loader": "^8.1.0",
+    "firebase": "^8.0.1",
+    "firebase-admin": "^9.3.0",
     "framer-motion": "^2.9.4",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",

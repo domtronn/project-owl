@@ -8,10 +8,14 @@
   background-color: var(--light);
   color: var(--black);
 
-  border: none;
+  border: 1px solid var(--white);
   outline: none;
 }
 
 .commentable input::placeholder {
   color: var(--grey);
+}
+
+.commentable input:focus {
+  border: 1px solid var(--primary);
 }
