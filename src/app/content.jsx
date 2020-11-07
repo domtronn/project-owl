@@ -3,6 +3,11 @@ import * as ReactDOM from "react-dom"
 
 import "../common/root.css"
 
+import 'firebase/auth'
+import 'firebase/firestore'
+
+import getPageData from './api/get-page-data'
+
 import { Bubble } from '../common/components/bubble'
 import { Card } from '../common/components/card'
 import { Comment } from '../common/components/comment'
@@ -88,13 +93,23 @@ const database = {
 const Login = () => {
   const [db] = React.useState(database)
 
+  const [me, setMe] = React.useState()
+  const [page, setPage] = React.useState()
+
   const [__page] = React.useState(db.pages[window.location.href] || {})
   const [__conversations, setConversations] = React.useState(__page.conversations || [])
   const [__comments, setComments] = React.useState(db.comments || [])
 
-  console.log('what')
-  
   const [state, setState] = React.useState(false)
+
+  React.useEffect(() => {
+    getPageData(window.location.href)
+      .then(setPage)
+
+    chrome
+      .runtime
+      .sendMessage({ type: 'GET_USER' }, user => setMe(user))
+  }, [])
 
   return (
     <div>
