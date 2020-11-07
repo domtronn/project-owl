@@ -19,12 +19,28 @@ export default ({ chrome, sendResponse }) => {
       firebase
         .auth()
         .signInWithCredential(credential)
-        .then(({ user }) => {
+        .then(({ user, additionalUserInfo, ...rest }) => {
           log('Got user after aign in')
           console.log(user)
 
-          sendResponse('listen')
-          chrome.runtime.sendMessage({ type: 'GOOGLE_USER', user })
+          const docRef = firebase
+            .firestore()
+            .collection('users')
+            .doc(user.uid)
+
+          const payload = {
+            name: additionalUserInfo.profile.name,
+            avatar: user.photoURL
+          }
+
+          docRef.get()
+            .then(doc => {
+              doc.exists
+                ? docRef.update(payload)
+                : docRef.set(payload)
+
+              chrome.runtime.sendMessage({ type: 'GOOGLE_USER', user })
+            })
         })
     })
 }
