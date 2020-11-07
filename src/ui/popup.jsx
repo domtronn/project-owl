@@ -36,8 +36,20 @@ const Popup = () => {
   return (
     <>
       <em>commentable</em>
-      {state === states.LOGIN && (<Login onRegister={_ => setState(states.REGISTER)} onLoginSuccess={_ => setState(states.COMPLETE)} />)}
-      {state === states.REGISTER && (<Register onLogin={_ => setState(states.LOGIN)} onRegisterSuccess={_ => setState(states.COMPLETE)} />)}
+      {state === states.LOGIN && (
+        <Login
+          onRegister={_ => setState(states.REGISTER)}
+          onLoginSuccess={_ => setState(states.COMPLETE)}
+        />
+      )}
+
+      {state === states.REGISTER && (
+        <Register
+          onLogin={_ => setState(states.LOGIN)}
+          onRegisterSuccess={_ => setState(states.COMPLETE)}
+        />
+      )}
+
       {state === states.COMPLETE && (
         <>
           <p>You're logged in and everything is good!</p>
@@ -53,6 +65,11 @@ const Popup = () => {
           </Button>
         </>
       )}
+
+      <p>
+        <a>Terms</a>
+        <a>Privacy</a>
+      </p>
     </>
   )
 }

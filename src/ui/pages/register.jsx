@@ -85,10 +85,6 @@ export default ({
         Already have an account?
       </Button>
 
-      <p>
-        <a>Terms</a>
-        <a>Privacy</a>
-      </p>
     </>
   )
 }

@@ -85,5 +85,8 @@ body {
 /* Spacing */
 h5 { margin: 32px 0 8px; }
 input, button { margin-bottom: 8px; }
-p + *, a + button, button + p { margin-top: 32px; }
+.commentable p + form,
+.commentable a + button,
+.commentable a + p,
+.commentable button + p { margin-top: 32px; }
 a { margin: 0 8px; }
