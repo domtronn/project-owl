@@ -35,6 +35,10 @@ export default ({
                 .doc(user.uid)
                 .set({ name, handle: username })
 
+              chrome
+                .runtime
+                .sendMessage({ type: 'VERIFY_USER' })
+
               onRegisterSuccess({ ...user, name, handle: username })
             })
             .catch(error => {

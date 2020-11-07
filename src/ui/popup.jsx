@@ -26,9 +26,11 @@ const states = {
 
 const Popup = () => {
   const [state, setState] = React.useState(states.LOADING)
+  const [user, setUser] = React.useState()
 
   React.useEffect(() => {
     chrome.runtime.sendMessage({ type: 'GET_USER' }, user => {
+      setUser(user)
       setState(user ? states.COMPLETE : states.LOGIN)
     })
   }, [])
@@ -52,7 +54,25 @@ const Popup = () => {
 
       {state === states.COMPLETE && (
         <>
-          <p>You're logged in and everything is good!</p>
+
+          {user.emailVerified && (
+            <>
+              <p>You're logged in and everything is good!</p>
+            </>
+          )}
+
+          {!user.emailVerified && (
+            <>
+              <p>Please verify your email address</p>
+              <Button
+                variant='primary'
+                onClick={() => chrome.runtime.sendMessage({ type: 'VERIFY_USER' })}
+              >
+                Send verification email
+              </Button>
+            </>
+          )}
+
           <Button
             onClick={() =>
               firebase
@@ -63,6 +83,10 @@ const Popup = () => {
           >
             Sign out
           </Button>
+
+          <pre>
+            {JSON.stringify(user || {}, null, 2)}
+          </pre>
         </>
       )}
 
