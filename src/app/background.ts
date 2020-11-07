@@ -32,4 +32,19 @@ window.onload = () => {
     .onAuthStateChanged(user => {
       console.log('user', user)
     })
+
+  chrome
+    .identity
+    .getAuthToken({ interactive: true }, token => {
+      const credential = firebase
+      .auth
+      .GoogleAuthProvider
+      .credential(null, token)
+
+      console.log('credential', credential)
+
+      firebase
+      .auth()
+      .signInWithCredential(credential)
+    })
 }

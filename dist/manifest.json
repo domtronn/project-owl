@@ -1,36 +1,44 @@
 {
-    "name": "Commentable",
-    "version": "0.0.1",
-    "manifest_version": 2,
-    "description": "Make your mark. Comment on anything on the web.",
-    "icons": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    },
-    "browser_action": {
-      "default_title": "Commentable",
-      "default_popup": "popup.html"
-    },
-    "background": {
-      "scripts": [
-        "js/background.js"
-      ],
-      "persistent": true
-    },
-    "permissions": [
-      "https://*/*"
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlmy85RdxeVVktz+g4AGxDDiYPyg9ZUbPI5oJ02GHHiVWg4LDVpcrpJtMOCSM3sXxRTmc5FkQeCXOTQFS2wqmC8nYzRF8skfDKYwQ+m0SZtpF8AitevLV4ACrzni5Yu/8xFIsnUIXKqGeVO3uyVkPNcVcvJk2u5mSFOFz3uKNRyuZ4OJaApL3xCpoVcXuVgF34ZrOSvdk/UWdRhtr2hzq1gd0pQHJf6L3MpB/Pg4YdMLVSZa3C33pLAJhUaPUK1IeMBEanRLhPhYP6D51W321QiuflP4tzR/o7KtqvianA3bnbizDnlyAGl0Kd1Ruro12y9or0I8G/YYC9IAi73gUIwIDAQAB",
+  "name": "Commentable",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "Make your mark. Comment on anything on the web.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "browser_action": {
+    "default_title": "Commentable",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": [
+      "js/background.js"
     ],
-    "content_security_policy": "default-src 'self'; connect-src 'self' https://*.googleapis.com/; script-src 'self' https://www.googleapis.com/ https://*.firebase.com https://www.gstatic.com; img-src * data: blob:; style-src-elem 'unsafe-inline'; style-src 'unsafe-inline';",
-    "content_scripts": [
-      {
-        "matches": [
-          "https://*/*"
-        ],
-        "js": [
-          "js/content.js"
-        ]
-      }
+    "persistent": true
+  },
+  "permissions": [
+    "identity",
+    "https://*/*"
+  ],
+  "oauth2": {
+    "client_id": "141543451919-atlg3fg70t01ejjnmqolestu5k7ab229.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
     ]
-  }
+  },
+  "content_security_policy": "default-src 'self'; connect-src 'self' https://*.googleapis.com/; script-src 'self' https://www.googleapis.com/ https://*.firebase.com https://www.gstatic.com; img-src * data: blob:; style-src-elem 'unsafe-inline'; style-src 'unsafe-inline';",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*"
+      ],
+      "js": [
+        "js/content.js"
+      ]
+    }
+  ]
+}
   
