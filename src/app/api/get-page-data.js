@@ -12,7 +12,7 @@ export default (href) => new Promise((resolve, reject) => {
     .then(res => {
       res.forEach(page => {
         console.log(page.data())
-        resolve(page.data())
+        resolve({ ...page.data(), id: page.id })
       })
     })
     .catch(err => {

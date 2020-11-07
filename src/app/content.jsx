@@ -6,14 +6,15 @@ import "../common/root.css"
 import 'firebase/auth'
 import 'firebase/firestore'
 
+import createThread from './api/create-thread'
+
 import getPageData from './api/get-page-data'
+import getPageThreadData from './api/get-page-thread-data'
 
 import { Bubble } from '../common/components/bubble'
 import { Card } from '../common/components/card'
 import { Comment } from '../common/components/comment'
 import { Toggle } from '../common/components/toggle'
-
-import { v4 as uuid } from 'uuid'
 
 import CommentCard from '../common/components/comment-card'
 
@@ -94,7 +95,7 @@ const Login = () => {
   const [db] = React.useState(database)
 
   const [me, setMe] = React.useState()
-  const [page, setPage] = React.useState()
+  const [page, setPage] = React.useState({})
 
   const [__page] = React.useState(db.pages[window.location.href] || {})
   const [__conversations, setConversations] = React.useState(__page.conversations || [])
@@ -167,7 +168,7 @@ const Login = () => {
               >
                 <CommentCard
                   onSubmit={content => {
-                    const commentId = uuid()
+                    const commentId = '123123123'
                     const comment = {
                       time: (new Date()).toISOString(),
                       content,
@@ -220,6 +221,117 @@ const Login = () => {
   )
 }
 
+const states = {
+  VIEW: 'view',
+  EDIT: 'edit'
+}
+
+const ContentV2 = () => {
+  const [state, setState] = React.useState(states.VIEW)
+
+  const [me, setMe] = React.useState({})
+  const [page, setPage] = React.useState({})
+  const [threads, setThreads] = React.useState([])
+
+  React.useEffect(() => {
+    getPageData(window.location.href)
+      .then(setPage)
+  }, [])
+
+  React.useEffect(() => {
+    if (!page.id) return
+
+    getPageThreadData(page.id)
+      .then(setThreads)
+  }, [page.id])
+
+  React.useEffect(() => {
+    chrome
+      .runtime
+      .sendMessage({ type: 'GET_USER' }, user => setMe(user))
+  }, [])
+
+  return (
+    <div>
+      <pre
+        style={{
+          zIndex: -300,
+          color: 'rgba(0,0,0,0.2)',
+          position: 'fixed',
+          textAlign: 'left',
+          top: 32,
+          left: 32
+        }}
+      >
+        {JSON.stringify(me, null, 2)}
+        {JSON.stringify(page, null, 2)}
+        {JSON.stringify(threads, null, 2)}
+      </pre>
+
+      {state && (
+        <div
+          onMouseDown={e => {
+            const { pageX, pageY } = e
+            const { outerWidth } = window
+            const thread = {
+              pageId: page.id,
+              pageWidth: outerWidth,
+              pageX,
+              pageY,
+            }
+
+            createThread(thread)
+            setThreads(threads.concat(thread))
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            cursor: 'copy'
+          }}
+        />
+      )}
+
+      <Card
+        style={{
+          position: 'fixed',
+          right: '32px',
+          bottom: '32px'
+        }}
+      >
+        <p style={{ marginBottom: 8 }}>
+          {state === states.EDIT && 'View mode'}
+          {state === states.VIEW && 'Edit mode'}
+        </p>
+        <Toggle
+          initial={state}
+          onToggle={() => setState(
+            state === states.EDIT
+              ? states.VIEW
+              : states.EDIT
+          )}
+        />
+      </Card>
+
+      {
+        threads
+          .map(({ pageX, pageY, pageWidth, comments }, i) => {
+            return (
+              <Bubble
+                x={normalise(pageX, pageWidth)}
+                y={pageY}
+                delay={i / 5}
+                key={i}
+              />
+            )
+          })
+      }
+    </div>
+  )
+}
+
 // --------------
 
 const mountId = 'COMMENTABLE_MOUNT'
@@ -234,6 +346,6 @@ if (!document.getElementById(mountId)) {
 }
 
 ReactDOM.render(
-  <Login />,
+  <ContentV2 />,
   document.getElementById(mountId)
 )
