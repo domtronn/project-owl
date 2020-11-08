@@ -27,7 +27,7 @@ export const get = (pageId) => new Promise((resolve, reject) => {
 
 export const create = (pageId, data) => threadsRef(pageId)
   .add({
-    ...data, 
+    ...data,
     created: new Date().toISOString()
   })
 
@@ -43,4 +43,5 @@ export const del = (pageId, threadId) => threadsRef(pageId)
   .delete()
 
 export const onChange = (pageId, cb) => threadsRef(pageId)
+  .orderBy('created', 'asc')
   .onSnapshot(cb)

@@ -8,9 +8,10 @@ export const Bubble = ({
   y,
   children,
   delay = 0,
+  isOpen = false,
   onClick = _ => _
 }) => {
-  const [isopen, setopen] = React.useState(false)
+  const [isopen, setopen] = React.useState(isOpen)
 
   if (!x || !y) return null
 
@@ -18,7 +19,7 @@ export const Bubble = ({
     <>
       <AnimatePresence>
         {isopen && (
-          <div style={{ position: 'absolute', top: y + 16, left: x + 16 }}>
+          <div style={{ position: 'absolute', top: y, left: x }}>
             {children}
           </div>
         )}

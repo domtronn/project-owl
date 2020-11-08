@@ -8,6 +8,12 @@ import { Comment } from './comment.jsx'
 
 import './comment-card.css'
 
+const { useState, useEffect } = React
+const states = {
+  THREAD: 'thread',
+  COMMENT: 'comment',
+}
+
 const ChatForm = ({
   onSubmit,
   placeholder,
@@ -25,11 +31,11 @@ const ChatForm = ({
     >
       <Input
         autoFocus
-        type="text"
-        name="comment"
+        type='text'
+        name='comment'
         placeholder={`${placeholder.replace(/\.\.\.$/, '')}`}
         value={comment}
-        onChange={e => setComment(e.target.value) }
+        onChange={e => setComment(e.target.value)}
       />
 
       <AnimatePresence>
@@ -57,9 +63,9 @@ const ChatForm = ({
 
 const NoComments = ({ onSubmit }) => (
   <ChatForm
-    submit="Post"
+    submit='Post'
     onSubmit={onSubmit}
-    placeholder="Write a comment"
+    placeholder='Write a comment'
   />
 )
 
@@ -67,12 +73,12 @@ const WithComments = ({ comments, onSubmit }) => (
   <>
     {
       comments
-        .map(({ user, time, content }, i) => (
+        .map(({ user, created, content }, i) => (
           <div key={`comment-${i}`}>
             <Comment
               img={user.avatar}
               title={user.name}
-              subtitle={time}
+              subtitle={created}
             />
 
             {[]
@@ -97,9 +103,29 @@ const WithComments = ({ comments, onSubmit }) => (
   </>
 )
 
-export default ({ comments = [], onSubmit = _ => _ }) => (
-  <Card className="commentcard">
-    {comments.length && <WithComments onSubmit={onSubmit} comments={comments} />}
-    {comments.length === 0 && <NoComments onSubmit={onSubmit} />}
-  </Card>
-)
+export default ({
+  onCommentsChange = Promise.reject,
+  onSubmit = _ => _
+}) => {
+  const [state, setState] = useState(states.COMMENT)
+  const [comments, setComments] = useState([])
+
+  useEffect(() =>
+    onCommentsChange(
+      comments => {
+        setComments(comments)
+        setState(
+          comments.length === 0
+            ? states.COMMENT
+            : states.THREAD
+        )
+      }),
+    [])
+
+  return (
+    <Card className='commentcard'>
+      {state === states.THREAD && <WithComments onSubmit={onSubmit} comments={comments} />}
+      {state === states.COMMENT && <NoComments onSubmit={onSubmit} />}
+    </Card>
+  )
+}

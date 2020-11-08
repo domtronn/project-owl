@@ -3,6 +3,11 @@
   margin-top: 20px;
 }
 
+.commentable .commentcard > form:first-child > input:first-child
+{
+  margin-top: 0;
+}
+
 .commentable .commentcard form button
 {
   margin-top: 8px;
