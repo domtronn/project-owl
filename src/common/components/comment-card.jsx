@@ -8,7 +8,6 @@ import { Comment } from './comment.jsx'
 
 import './comment-card.css'
 
-const { useState, useEffect } = React
 const states = {
   THREAD: 'thread',
   COMMENT: 'comment',
@@ -103,23 +102,12 @@ const WithComments = ({ comments, onSubmit }) => (
 )
 
 export default ({
-  onCommentsChange = Promise.reject,
+  comments = [],
   onSubmit = _ => _
 }) => {
-  const [state, setState] = useState(states.COMMENT)
-  const [comments, setComments] = useState([])
-
-  useEffect(() =>
-    onCommentsChange(
-      comments => {
-        setComments(comments)
-        setState(
-          comments.length === 0
-            ? states.COMMENT
-            : states.THREAD
-        )
-      }),
-    [])
+  const state = comments.length === 0
+        ? states.COMMENT
+        : states.THREAD
 
   return (
     <Card className='commentcard'>

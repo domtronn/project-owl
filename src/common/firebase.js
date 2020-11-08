@@ -14,8 +14,4 @@ const firebaseConfig = {
 
 fb.initializeApp(firebaseConfig)
 
-fb
-  .firestore()
-  .enablePersistence()
-
 export const firebase = fb
