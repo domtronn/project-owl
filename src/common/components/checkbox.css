@@ -19,7 +19,7 @@
   bottom: 0;
 }
 
-.commentable .checkbox div {
+.commentable .checkbox > div {
   display: inline-flex;
   align-items: center;
   text-align: left;

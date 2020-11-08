@@ -61,6 +61,7 @@
 }
 
 .commentable .t--bold { font-weight: 600; }
+.commentable .t--light { color: var(--lightgrey); }
 
 /** Link text styling */
 .commentable a,

@@ -4,6 +4,7 @@ import { firebase } from '../../common/firebase'
 import 'firebase/firestore'
 
 import { Button } from '../../common/components/button'
+import { Checkbox } from '../../common/components/checkbox'
 
 export default ({ user }) => {
   const [teams, setTeams] = React.useState([])
@@ -33,6 +34,7 @@ export default ({ user }) => {
       </p>
 
       <form
+        style={{ textAlign: 'left' }}
         onSubmit={e => {
           e.preventDefault()
           selectedTeams.forEach(id => {
@@ -50,27 +52,23 @@ export default ({ user }) => {
       >
         {
           teams.map(({ name, members = {}, id }, i) => (
-            <label>
-              <input
-                onChange={_ => {
-                  setSelectedTeams(
-                    selectedTeams.includes(id)
-                      ? selectedTeams.filter(i => i !== id)
-                      : selectedTeams.concat(id)
-                  )
-                }}
-                checked={selectedTeams.includes(id)}
-                type='checkbox'
-                key={`${name}--${i}`}
-              />
-              <div>
-                <div style={{ display: 'inline-block', width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--lightgrey)' }} />
-                <div style={{ display: 'inline-block' }}>
-                  <div>{name}</div>
-                  <div>{Object.keys(members).length} member{Object.keys(members).length === 1 ? '' : 's'}</div>
-                </div>
+            <Checkbox
+              style={{ margin: '16px 0' }}
+              onChange={_ => {
+                setSelectedTeams(
+                  selectedTeams.includes(id)
+                    ? selectedTeams.filter(i => i !== id)
+                    : selectedTeams.concat(id)
+                )
+              }}
+              checked={selectedTeams.includes(id)}
+              key={`${name}--${i}`}
+            >
+              <div className='t t__md'>{name}</div>
+              <div className='t t__sm t--light'>
+                {Object.keys(members).length} member{Object.keys(members).length === 1 ? '' : 's'}
               </div>
-            </label>
+            </Checkbox>
           ))
         }
 
