@@ -20,9 +20,14 @@
 }
 
 .commentable .checkbox > div {
+  width: 100%;
   display: inline-flex;
   align-items: center;
   text-align: left;
+}
+
+.commentable .checkbox__check + div {
+  width: 100%;
 }
 
 .commentable .checkbox__check

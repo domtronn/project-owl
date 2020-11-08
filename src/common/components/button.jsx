@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import './button.css'
 
-export const Button = ({ children, disabled, variant, ...rest }) => {
+export const Button = ({ children, disabled, size, variant, ...rest }) => {
   const variantCN = variant
     ? `btn btn--${variant}`
     : `btn`
@@ -11,7 +11,11 @@ export const Button = ({ children, disabled, variant, ...rest }) => {
     ? `btn--disabled`
     : ''
 
-  const className = [variantCN, disabledCN]
+  const sizeCN = size
+    ? `btn--${size}`
+    : ''
+
+  const className = [variantCN, disabledCN, sizeCN]
     .filter(i => i)
     .join(' ')
 
