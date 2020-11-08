@@ -1,21 +1,15 @@
-import * as React from "react"
-import * as ReactDOM from "react-dom"
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+
+import '../common/root.css'
 
 import { motion } from 'framer-motion'
 
-import "../common/root.css"
-
-import 'firebase/auth'
-import 'firebase/firestore'
-
-import createThread from './api/create-thread'
-
-import getPageData from './api/get-page-data'
-import getPageThreadData from './api/get-page-thread-data'
+import * as Pages from './api/page'
+import * as Threads from './api/thread'
 
 import { Bubble } from '../common/components/bubble'
 import { Card } from '../common/components/card'
-import { Comment } from '../common/components/comment'
 import { Toggle } from '../common/components/toggle'
 
 import CommentCard from '../common/components/comment-card'
@@ -24,7 +18,6 @@ const normalise = (x, viewport) => {
   const diff = viewport - window.outerWidth
   return x - (diff / 2)
 }
-
 
 chrome.runtime.sendMessage({}, (response) => {
   var checkReady = setInterval(() => {
@@ -106,7 +99,8 @@ const Login = () => {
   const [state, setState] = React.useState(false)
 
   React.useEffect(() => {
-    getPageData(window.location.href)
+    Pages
+      .get(window.location.href)
       .then(setPage)
 
     chrome
@@ -230,21 +224,40 @@ const states = {
 
 const ContentV2 = () => {
   const [state, setState] = React.useState(states.VIEW)
+  const [initThreads, setInitThreads] = React.useState(true)
 
   const [me, setMe] = React.useState({})
   const [page, setPage] = React.useState({})
   const [threads, setThreads] = React.useState([])
 
+  console.log('threads', threads)
+  console.log('initThreads', initThreads)
+
   React.useEffect(() => {
-    getPageData(window.location.href)
+  })
+
+  React.useEffect(() => {
+    Pages
+      .get(window.location.href)
       .then(setPage)
   }, [])
 
   React.useEffect(() => {
     if (!page.id) return
 
-    getPageThreadData(page.id)
-      .then(setThreads)
+    const unsubscribe = Threads
+      .onChange(page.id, snap => {
+        setThreads(snap.docs.map((doc, i) => ({
+          id: doc.id,
+          ...doc.data()
+        })))
+
+        if (initThreads) {
+          setTimeout(() => setInitThreads(false), snap.docs.length * 100)
+        }
+      })
+
+    return unsubscribe
   }, [page.id])
 
   React.useEffect(() => {
@@ -278,8 +291,7 @@ const ContentV2 = () => {
               pageY,
             }
 
-            createThread(thread)
-            setThreads(threads.concat(thread))
+            Threads.create(page.id, thread)
           }}
           style={{
             position: 'fixed',
@@ -313,19 +325,23 @@ const ContentV2 = () => {
         />
       </Card>
 
-      {
-        threads
-          .map(({ pageX, pageY, pageWidth, comments }, i) => {
-            return (
-              <Bubble
-                delay={i / 10}
-                x={normalise(pageX, pageWidth)}
-                y={pageY}
-                key={i}
-              />
-            )
-          })
-      }
+        {
+          threads
+            .map(({ pageX, pageY, pageWidth, id }, i) => {
+              return (
+                <Bubble
+                  onClick={_ => {
+                    Threads.del(page.id, id)
+                  }}
+                  delay={initThreads ? i / 10 : 0}
+                  x={normalise(pageX, pageWidth)}
+                  y={pageY}
+                  key={id}
+                />
+              )
+            })
+        }
+
     </motion.div>
   )
 }

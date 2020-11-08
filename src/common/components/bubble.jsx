@@ -3,7 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 import './bubble.css'
 
-export const Bubble = ({ x, y, children, delay = 0 }) => {
+export const Bubble = ({
+  x,
+  y,
+  children,
+  delay = 0,
+  onClick = _ => _
+}) => {
   const [isopen, setopen] = React.useState(false)
 
   if (!x || !y) return null
@@ -31,9 +37,14 @@ export const Bubble = ({ x, y, children, delay = 0 }) => {
           default: { delay },
           scale: { delay: 0 },
           type: 'spring',
-          stiffness: 600 }}
+          stiffness: 600
+        }}
 
-        onClick={setopen.bind(this, !isopen)}
+        onClick={() => {
+          onClick()
+          setopen(!isopen)
+        }}
+
         style={{ top: y, left: x }}
         className='bubble'
       />
