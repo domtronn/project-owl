@@ -82,13 +82,12 @@ const WithComments = ({ comments, onSubmit }) => (
             />
 
             {[]
-              .concat(content)
-              .map(c => (
-                <p className='t t__sm'>
-                  {c}
-                </p>
-              ))
-            }
+             .concat(content)
+             .map((c, i) => (
+               <p key={i} className='t t__sm'>
+                 {c}
+               </p>
+             ))}
 
             {i !== comments.length - 1 && <hr />}
           </div>

@@ -58,13 +58,11 @@ const ContentV2 = () => {
     userId: me.uid
   }
 
-  console.log(baseCtx)
-  
   React.useEffect(() => {
     Pages
       .get(baseCtx, window.location.href)
+      .then(page => setPage(page || {}))
       .catch(err => console.error(err))
-      .then(setPage)
   }, [])
 
   React.useEffect(() => {
