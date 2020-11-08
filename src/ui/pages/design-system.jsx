@@ -1,13 +1,14 @@
 import * as React from "react"
 
-import { Comment } from '../common/components/comment.jsx'
-import { Bubble } from '../common/components/bubble.jsx'
-import { Button } from '../common/components/button.jsx'
-import { Card } from '../common/components/card.jsx'
-import { Toggle } from '../common/components/toggle.jsx'
+import { Comment } from '../../common/components/comment.jsx'
+import { Bubble } from '../../common/components/bubble.jsx'
+import { Button } from '../../common/components/button.jsx'
+import { Card } from '../../common/components/card.jsx'
+import { Toggle } from '../../common/components/toggle.jsx'
+import { Checkbox } from '../../common/components/checkbox.jsx'
 
 export const DesignSystem = () => (
-  <>
+  <div>
     <h1>Heading 1</h1>
     <h2>Heading 2</h2>
     <h3>Heading 3</h3>
@@ -42,6 +43,10 @@ export const DesignSystem = () => (
 
     <Toggle />
 
+    <Checkbox>
+      Click me!
+    </Checkbox>
+
     <Button variant="primary">Button</Button>
     <Button>Button</Button>
 
@@ -59,5 +64,5 @@ export const DesignSystem = () => (
       title="Dom Charlesworth"
       subtitle="Today at 12:03am"
     />
-  </>
+  </div>
 )
