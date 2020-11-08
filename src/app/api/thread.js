@@ -25,11 +25,19 @@ export const get = (pageId) => new Promise((resolve, reject) => {
     .catch(err => reject(err))
 })
 
-export const create = (pageId, data) => threadsRef(pageId)
-  .add({
-    ...data,
-    created: new Date().toISOString()
-  })
+export const create = (pageId, data) =>
+  data.id
+    ? threadsRef(pageId)
+      .doc(data.id)
+      .set({
+        ...data,
+        created: new Date().toISOString()
+      })
+    : threadsRef(pageId)
+      .add({
+        ...data,
+        created: new Date().toISOString()
+      })
 
 export const update = (pageId, threadId, data) => threadsRef(pageId)
   .doc(threadId)

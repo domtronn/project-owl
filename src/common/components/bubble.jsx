@@ -11,14 +11,12 @@ export const Bubble = ({
   isOpen = false,
   onClick = _ => _
 }) => {
-  const [isopen, setopen] = React.useState(isOpen)
-
   if (!x || !y) return null
 
   return (
     <>
       <AnimatePresence>
-        {isopen && (
+        {isOpen && (
           <div style={{ position: 'absolute', top: y, left: x }}>
             {children}
           </div>
@@ -41,10 +39,7 @@ export const Bubble = ({
           stiffness: 600
         }}
 
-        onClick={() => {
-          onClick()
-          setopen(!isopen)
-        }}
+        onClick={() => onClick()}
 
         style={{ top: y, left: x }}
         className='bubble'

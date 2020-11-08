@@ -1,8 +1,10 @@
+/** global chrome */
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import '../common/root.css'
 
+import { v4 as uuid } from 'uuid'
 import { motion } from 'framer-motion'
 
 import * as Pages from './api/page'
@@ -39,15 +41,18 @@ const users = {
 
 const ContentV2 = () => {
   const [state, setState] = React.useState(states.VIEW)
-  const [initThreads, setInitThreads] = React.useState(true)
 
   const [me, setMe] = React.useState({})
   const [page, setPage] = React.useState({})
   const [threads, setThreads] = React.useState([])
 
+  const [initThreads, setInitThreads] = React.useState(true)
+  const [currThread, setCurrThread] = React.useState()
+
   React.useEffect(() => {
     Pages
       .get(window.location.href)
+      .catch(err => console.error(err))
       .then(setPage)
   }, [])
 
@@ -92,13 +97,15 @@ const ContentV2 = () => {
             const { pageX, pageY } = e
             const { outerWidth } = window
             const thread = {
+              id: uuid(),
               pageId: page.id,
               pageWidth: outerWidth,
               pageX,
-              pageY,
+              pageY
             }
 
-            setThreads(threads.concat({ ...thread, init: true }))
+            setThreads(threads.concat({ ...thread }))
+            setCurrThread(thread.id)
           }}
           style={{
             position: 'fixed',
@@ -138,7 +145,8 @@ const ContentV2 = () => {
             const { pageX, pageY, pageWidth } = threadData
             return (
               <Bubble
-                isOpen={!!init}
+                onClick={_ => setCurrThread(currThread === id ? null : id)}
+                isOpen={id === currThread}
                 delay={initThreads ? i / 10 : 0}
                 x={normalise(pageX, pageWidth)}
                 y={pageY}
@@ -182,12 +190,14 @@ const ContentV2 = () => {
                   }}
 
                   onSubmit={content => {
-                    const threadPromise = init
+                    const threadPromise = !threadData.created
                       ? Threads.create(page.id, threadData)
                       : Promise.resolve({ id })
 
                     threadPromise
+                      .catch(err => console.error(err))
                       .then(thread => {
+                        debugger
                         Comments
                           .create(
                             page.id,
