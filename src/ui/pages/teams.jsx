@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { motion } from 'framer-motion'
 import { firebase } from '../../common/firebase'
 import 'firebase/firestore'
 
@@ -52,25 +53,38 @@ export default ({ user }) => {
       >
         {
           teams.map(({ name, members = {}, id }, i) => (
-            <Checkbox
-              style={{ margin: '16px 0' }}
-              onChange={_ => {
-                setSelectedTeams(
-                  selectedTeams.includes(id)
-                    ? selectedTeams.filter(i => i !== id)
-                    : selectedTeams.concat(id)
-                )
+            <motion.div
+              initial='hidden'
+              animate='visible'
+              transition={{
+                delay: i / 4,
+                type: 'spring',
+                stiffness: 600
               }}
-              checked={selectedTeams.includes(id)}
-              key={`${name}--${i}`}
+              variants={{
+                visible: { y: 0, opacity: 1 },
+                hidden: { y: 20, opacity: 0 }
+              }}
+              key={i}
             >
-              <div className='t t__md'>{name}</div>
-              <div className='t t__sm t--light'>
-                {Object.keys(members).length} member{Object.keys(members).length === 1 ? '' : 's'}
-              </div>
-            </Checkbox>
-          ))
-        }
+              <Checkbox
+                style={{ margin: '16px 0' }}
+                onChange={_ => {
+                  setSelectedTeams(
+                    selectedTeams.includes(id)
+                      ? selectedTeams.filter(i => i !== id)
+                      : selectedTeams.concat(id)
+                  )
+                }}
+                checked={selectedTeams.includes(id)}
+              >
+                <div className='t t__md'>{name}</div>
+                <div className='t t__sm t--light'>
+                  {Object.keys(members).length} member{Object.keys(members).length === 1 ? '' : 's'}
+                </div>
+              </Checkbox>
+            </motion.div>
+          ))}
 
         <Button variant='primary'>
           Join teams
