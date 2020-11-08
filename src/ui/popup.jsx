@@ -12,6 +12,7 @@ import '../styles/popup.css'
 
 import Login from './pages/login'
 import Register from './pages/register'
+import Teams from './pages/teams'
 
 import { Button } from '../common/components/button'
 
@@ -65,9 +66,9 @@ const Popup = () => {
       {state === states.COMPLETE && (
         <>
           {user.emailVerified && (
-            <>
-              <p>You're logged in and everything is good!</p>
-            </>
+            <Teams
+              user={user}
+            />
           )}
 
           {!user.emailVerified && (
@@ -92,10 +93,6 @@ const Popup = () => {
           >
             Sign out
           </Button>
-
-          <pre>
-            {JSON.stringify(user || {}, null, 2)}
-          </pre>
         </>
       )}
 
