@@ -7,13 +7,34 @@ import 'firebase/firestore'
 import { Button } from '../../common/components/button'
 import { Checkbox } from '../../common/components/checkbox'
 
-export default ({ user }) => {
-  const [teams, setTeams] = React.useState([])
-  const [selectedTeams, setSelectedTeams] = React.useState([])
+import Skeleton from '../../common/components/skeleton'
 
-  React.useEffect(() => {
+const { useState, useEffect } = React
+const TeamsSkel = ({ count }) => Array(count)
+  .fill()
+  .map((_, i) => (
+    <div
+      key={`skeleton-${i}`}
+      style={{ display: 'flex', alignItems: 'center', margin: '16px 0', marginLeft: 2, maxHeight: 38 }}
+    >
+      <Skeleton.Avatar size='sm' style={{ marginRight: 8 }} />
+      <div style={{ width: 'calc(100% - 48px)', display: 'inline-block' }}>
+        <Skeleton.Text style={{ margin: 8 }} width={(128 * (i + 1)) % 192} size='md' />
+        <Skeleton.Text style={{ margin: 8 }} width={(164 * (i + 1)) % 186} size='sm' />
+      </div>
+    </div>
+  ))
+
+export default ({ user }) => {
+  const [loading, setLoading] = useState(true)
+
+  const [teams, setTeams] = useState([])
+  const [selectedTeams, setSelectedTeams] = useState([])
+
+  useEffect(() => {
     (
       async () => {
+        setLoading(true)
         const teamsRef = await firebase
               .firestore()
               .collection('/teams')
@@ -22,6 +43,7 @@ export default ({ user }) => {
         const res = []
         teamsRef.forEach(ref => res.push({ id: ref.id, ...ref.data()}))
         setTeams(res)
+        setLoading(false)
       }
     )()
   }, [])
@@ -51,6 +73,10 @@ export default ({ user }) => {
           })
         }}
       >
+        {loading && (
+          <TeamsSkel count={2} />
+        )}
+
         {
           teams.map(({ name, members = {}, id }, i) => (
             <motion.div

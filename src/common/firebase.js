@@ -12,10 +12,6 @@ const firebaseConfig = {
   appId: '1:146591413764:web:22ce46d5540950d9d96751'
 }
 
-fb.initializeApp(firebaseConfig)
-
-fb
-  .firestore()
-  .enablePersistence()
-
-export const firebase = fb
+export const firebase = !fb.apps.length
+  ? fb.initializeApp(firebaseConfig)
+  : fb.app()

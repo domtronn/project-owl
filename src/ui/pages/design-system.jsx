@@ -7,8 +7,14 @@ import { Card } from '../../common/components/card.jsx'
 import { Toggle } from '../../common/components/toggle.jsx'
 import { Checkbox } from '../../common/components/checkbox.jsx'
 
-export const DesignSystem = () => (
-  <div>
+import {
+  SkeletonText,
+  SkeletonAvatar,
+  SkeletonBlock
+} from '../../common/components/skeleton'
+
+export const DesignSystem = ({ variant }) => (
+  <div className={variant}>
     <h1>Heading 1</h1>
     <h2>Heading 2</h2>
     <h3>Heading 3</h3>
@@ -64,5 +70,15 @@ export const DesignSystem = () => (
       title="Dom Charlesworth"
       subtitle="Today at 12:03am"
     />
+
+    <SkeletonText size='sm' />
+    <SkeletonText />
+    <SkeletonText size='md' />
+    <SkeletonText size='lg' />
+    <SkeletonAvatar />
+    <SkeletonAvatar size='sm' />
+    <SkeletonAvatar size='lg' />
+    <SkeletonBlock height={120} />
+
   </div>
 )
