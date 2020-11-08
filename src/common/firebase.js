@@ -1,4 +1,6 @@
-import fb from "firebase/app"
+import fb from 'firebase/app'
+
+import 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD1uZNi8ipB-Y60RBwQhkPaUYyPJTfFroQ',
@@ -11,5 +13,9 @@ const firebaseConfig = {
 }
 
 fb.initializeApp(firebaseConfig)
+
+fb
+  .firestore()
+  .enablePersistence()
 
 export const firebase = fb
