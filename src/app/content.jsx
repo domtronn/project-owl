@@ -31,6 +31,7 @@ chrome.runtime.sendMessage({}, (response) => {
   })
 })
 
+const TEAM_ID = 'lh17L5cm5ql8mJINikns'
 const states = {
   VIEW: 'view',
   EDIT: 'edit'
@@ -42,6 +43,8 @@ const users = {
 const ContentV2 = () => {
   const [state, setState] = React.useState(states.VIEW)
 
+  const [team] = React.useState({ id: TEAM_ID })
+
   const [me, setMe] = React.useState({})
   const [page, setPage] = React.useState({})
   const [threads, setThreads] = React.useState([])
@@ -49,9 +52,17 @@ const ContentV2 = () => {
   const [initThreads, setInitThreads] = React.useState(true)
   const [currThread, setCurrThread] = React.useState()
 
+  const baseCtx = {
+    teamId: team.id,
+    pageId: page.id,
+    userId: me.uid
+  }
+
+  console.log(baseCtx)
+  
   React.useEffect(() => {
     Pages
-      .get(window.location.href)
+      .get(baseCtx, window.location.href)
       .catch(err => console.error(err))
       .then(setPage)
   }, [])
@@ -60,7 +71,7 @@ const ContentV2 = () => {
     if (!page.id) return
 
     const unsubscribe = Threads
-      .onChange(page.id, snap => {
+      .onChange(baseCtx, snap => {
         setThreads(snap.docs.map((doc, i) => ({
           id: doc.id,
           ...doc.data()
@@ -155,7 +166,7 @@ const ContentV2 = () => {
                 <CommentCard
                   onCommentsChange={cb => {
                     return Comments
-                      .onChange(page.id, id, snap => {
+                      .onChange({ ...baseCtx, threadId: id }, snap => {
                         cb(
                           snap
                             .docs
@@ -191,7 +202,7 @@ const ContentV2 = () => {
 
                   onSubmit={content => {
                     const threadPromise = !threadData.created
-                      ? Threads.create(page.id, threadData)
+                      ? Threads.create(baseCtx, threadData)
                       : Promise.resolve({ id })
 
                     threadPromise
@@ -200,8 +211,7 @@ const ContentV2 = () => {
                         debugger
                         Comments
                           .create(
-                            page.id,
-                            thread.id,
+                            { ...baseCtx, threadId: thread.id },
                             {
                               content,
                               user: me.uid

@@ -2,8 +2,10 @@ import { firebase } from '../../common/firebase'
 
 import 'firebase/firestore'
 
-const pagesRef = firebase
+const pagesRef = ({ teamId }) => firebase
       .firestore()
+      .collection('/teams')
+      .doc(teamId)
       .collection('/pages')
 
 /**
@@ -12,8 +14,8 @@ const pagesRef = firebase
  * @param {string} href - The href ID to get data
  * @returns {Object} The page document
  */
-export const get = (href) => new Promise((resolve, reject) => {
-  pagesRef
+export const get = (ctx, href) => new Promise((resolve, reject) => {
+  pagesRef(ctx)
     .where('href', '==', href)
     .limit(1)
     .get()
@@ -25,11 +27,13 @@ export const get = (href) => new Promise((resolve, reject) => {
     .catch(err => reject(err))
 })
 
-export const create = (data) => pagesRef.add(data)
-export const update = (pageId, data) => pagesRef
-  .doc(pageId)
+export const create = (ctx, data) => pagesRef(ctx)
+  .add(data)
+
+export const update = (ctx, data) => pagesRef(ctx)
+  .doc(ctx.pageId)
   .update(data)
 
-export const del = (pageId) => pagesRef
-  .doc(pageId)
+export const del = (ctx, pageId) => pagesRef(ctx)
+  .doc(ctx.pageId)
   .delete()
