@@ -1,0 +1,80 @@
+.commentable .checkbox {
+  display: block;
+}
+
+.commentable .checkbox__check {
+  transition: background-color 0.1s ease-in-out;
+}
+
+.commentable .checkbox__check svg {
+  transition: stroke 0.1s ease-in-out;
+}
+
+.commentable .checkbox input {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.commentable .checkbox div {
+  display: inline-flex;
+  align-items: center;
+  text-align: left;
+}
+
+.commentable .checkbox__check
+{
+  margin-right: 8px;
+  border: 2px solid var(--white);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--light);
+}
+
+.commentable .checkbox__check {
+  background-color: var(--light);
+}
+
+.commentable .checkbox__check svg {
+  stroke: var(--light);
+}
+
+.commentable .checkbox__check:hover {
+  cursor: pointer;
+  background-color: var(--light-darken);
+}
+
+.commentable .checkbox__check:hover svg {
+  stroke: var(--light-darken);
+}
+
+.commentable .checkbox__check:active {
+  border-color: var(--white);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+
+.commentable .checkbox__check svg {
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.commentable .checkbox input:checked + div .checkbox__check
+{
+  background-color: var(--primary);
+}
+
+.commentable .checkbox input:checked + div .checkbox__check:hover
+{
+  background-color: var(--primary-darken);
+}
+
+.commentable .checkbox input:checked + div .checkbox__check svg {
+  stroke: var(--white);
+}

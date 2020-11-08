@@ -40,6 +40,11 @@
   background-color: var(--primary);
 }
 
+.commentable .toggle:hover .toggle__slider:before {
+  background-color: var(--primary-darken);
+}
+
+
 .commentable .toggle input:checked + .toggle__slider
 {
   background-color: var(--primary);
@@ -49,4 +54,10 @@
 {
   transform: translateX(34px);
   background-color: var(--white);
+}
+
+
+.commentable .toggle:hover input:checked + .toggle__slider:before
+{
+  background-color: var(--light);
 }
