@@ -22,9 +22,9 @@ const normalise = (x, viewport) => {
 
 chrome.runtime.sendMessage({}, (response) => {
   var checkReady = setInterval(() => {
-    if (document.readyState === "complete") {
+    if (document.readyState === 'complete') {
       clearInterval(checkReady)
-      console.log("We're in the injected content script!")
+      console.log('We\'re in the injected content script!')
     }
   })
 })
@@ -146,21 +146,37 @@ const ContentV2 = () => {
               >
                 <CommentCard
                   onCommentsChange={cb => {
-                    Comments
+                    return Comments
                       .onChange(page.id, id, snap => {
                         cb(
-                          snap.docs.map(doc => {
-                            const { id } = doc
-                            const { user, ...data } = doc.data()
+                          snap
+                            .docs
+                            .map(doc => {
+                              const { id } = doc
+                              const { user, ...data } = doc.data()
 
-                            return {
-                              ...data,
-                              id,
-                              user: users[user] || {
-                                name: 'Anonymous'
+                              return {
+                                ...data,
+                                id,
+                                userId: user,
+                                user: users[user] || {
+                                  name: 'Anonymous'
+                                }
                               }
-                            }
-                          })
+                            })
+                            .reduce((acc, doc) => {
+                              const front = acc.slice(0, -1)
+                              const [last] = acc.slice(-1)
+
+                              if (!last) return acc.concat(doc)
+                              if (last.userId !== doc.userId) return acc.concat(doc)
+
+                              const content = []
+                                .concat(last.content)
+                                .concat(doc.content)
+
+                              return front.concat({ ...doc, content })
+                            }, [])
                         )
                       })
                   }}
