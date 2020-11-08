@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break
 
     case 'GOOGLE_AUTH_USER':
-      googleAuthUser({ chrome })
+      googleAuthUser({ chrome, sender })
       break
 
     case 'VERIFY_USER':

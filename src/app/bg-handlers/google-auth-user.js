@@ -5,7 +5,7 @@ import 'firebase/firestore'
 
 const log = (msg) => console.log(`GOOGLE_AUTH_USER // ${msg}`)
 
-export default ({ chrome, sendResponse }) => {
+export default ({ chrome, sender }) => {
   log('Beginning chrome identification')
   chrome
     .identity
@@ -15,6 +15,11 @@ export default ({ chrome, sendResponse }) => {
             .auth
             .GoogleAuthProvider
             .credential(null, token)
+
+      console.log('-----------------------')
+      console.log(token)
+      console.log(credential)
+      console.log('-----------------------')
 
       firebase
         .auth()
@@ -39,7 +44,7 @@ export default ({ chrome, sendResponse }) => {
                 ? docRef.update(payload)
                 : docRef.set(payload)
 
-              chrome.runtime.sendMessage({ type: 'GOOGLE_USER', user })
+              chrome.tabs.sendMessage(sender.tab.id, { type: 'GOOGLE_USER', user, token })
             })
         })
     })

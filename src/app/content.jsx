@@ -4,6 +4,9 @@ import * as ReactDOM from 'react-dom'
 
 import '../common/root.css'
 
+import { firebase } from '../common/firebase'
+import 'firebase/auth'
+
 import { v4 as uuid } from 'uuid'
 import { motion } from 'framer-motion'
 
@@ -58,13 +61,47 @@ const ContentV2 = () => {
     userId: me.uid
   }
 
+  /** Load and sign in user */
   React.useEffect(() => {
+    chrome
+      .runtime
+      .sendMessage({ type: 'GOOGLE_AUTH_USER' })
+
+    chrome
+      .runtime
+      .onMessage
+      .addListener(({ type, token }) => {
+        if (type !== 'GOOGLE_USER') return
+
+        const cred = firebase
+              .auth
+              .GoogleAuthProvider
+              .credential(null, token)
+
+        firebase
+          .auth()
+          .signInWithCredential(cred)
+          .then(() => {
+            const user = firebase
+                  .auth()
+                  .currentUser
+
+            setMe(user)
+          })
+      })
+  }, [])
+
+  /** Load page data for current page */
+  React.useEffect(() => {
+    if (!me.uid) return
+
     Pages
       .get(baseCtx, window.location.href)
       .then(page => setPage(page || {}))
       .catch(err => console.error(err))
-  }, [])
+  }, [me.uid])
 
+  /** Load thread data for current page */
   React.useEffect(() => {
     if (!page.id) return
 
@@ -80,12 +117,6 @@ const ContentV2 = () => {
 
     return unsubscribe
   }, [page.id])
-
-  React.useEffect(() => {
-    chrome
-      .runtime
-      .sendMessage({ type: 'GET_USER' }, user => setMe(user))
-  }, [])
 
   return (
     <motion.div
