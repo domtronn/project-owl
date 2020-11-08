@@ -1,12 +1,16 @@
-/** global chrome */
+/* global chrome */
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import '../common/root.css'
 
+import { firebase } from '../common/firebase'
+import 'firebase/auth'
+
 import { v4 as uuid } from 'uuid'
 import { motion } from 'framer-motion'
 
+import sw from './utils/switch'
 import * as Pages from './api/page'
 import * as Threads from './api/thread'
 import * as Comments from './api/comment'
@@ -22,22 +26,11 @@ const normalise = (x, viewport) => {
   return x - (diff / 2)
 }
 
-chrome.runtime.sendMessage({}, (response) => {
-  var checkReady = setInterval(() => {
-    if (document.readyState === 'complete') {
-      clearInterval(checkReady)
-      console.log('We\'re in the injected content script!')
-    }
-  })
-})
-
 const TEAM_ID = 'lh17L5cm5ql8mJINikns'
+const users = {}
 const states = {
   VIEW: 'view',
   EDIT: 'edit'
-}
-
-const users = {
 }
 
 const ContentV2 = () => {
@@ -48,6 +41,7 @@ const ContentV2 = () => {
   const [me, setMe] = React.useState({})
   const [page, setPage] = React.useState({})
   const [threads, setThreads] = React.useState([])
+  const [comments, setComments] = React.useState({})
 
   const [initThreads, setInitThreads] = React.useState(true)
   const [currThread, setCurrThread] = React.useState()
@@ -58,27 +52,47 @@ const ContentV2 = () => {
     userId: me.uid
   }
 
+  React.useEffect(() =>
+    chrome
+      .runtime
+      .onMessage
+      .addListener(({ type, ...msg }) => sw({
+        AUTH_CHANGE: ({ user }) => setMe(user),
+        GET_PAGE_SUCCESS: ({ page }) => setPage(page || {}),
+        PUB_THREADS: ({ threads }) => {
+          setThreads(threads || [])
+          initThreads && setTimeout(() => setInitThreads(false), threads.length * 100)
+        },
+
+        PUB_COMMENTS: ({ comments: c, threadId }) => {
+          setComments({
+            ...comments,
+            [threadId]: c
+          })
+        },
+
+        default: () => console.log('Got unknown message', type, msg)
+      })(type, msg)),
+    []
+  )
+
   React.useEffect(() => {
-    Pages
-      .get(baseCtx, window.location.href)
-      .then(page => setPage(page || {}))
-      .catch(err => console.error(err))
-  }, [])
+    if (!me.uid) return
+
+    chrome.runtime.sendMessage({
+      type: 'GET_PAGE',
+      ctx: baseCtx,
+      href: window.location.href
+    })
+  }, [me.uid])
 
   React.useEffect(() => {
     if (!page.id) return
 
-    const unsubscribe = Threads
-      .onChange(baseCtx, snap => {
-        setThreads(snap.docs.map((doc, i) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-
-        if (initThreads) setTimeout(() => setInitThreads(false), snap.docs.length * 100)
-      })
-
-    return unsubscribe
+    chrome.runtime.sendMessage({
+      type: 'SUB_THREADS',
+      ctx: baseCtx
+    })
   }, [page.id])
 
   React.useEffect(() => {
@@ -86,6 +100,8 @@ const ContentV2 = () => {
       .runtime
       .sendMessage({ type: 'GET_USER' }, user => setMe(user))
   }, [])
+
+  if (!me || !me.uid) return null
 
   return (
     <motion.div
@@ -154,7 +170,9 @@ const ContentV2 = () => {
             const { pageX, pageY, pageWidth } = threadData
             return (
               <Bubble
-                onClick={_ => setCurrThread(currThread === id ? null : id)}
+                onClick={_ => {
+                  setCurrThread(currThread === id ? null : id)
+                }}
                 isOpen={id === currThread}
                 delay={initThreads ? i / 10 : 0}
                 x={normalise(pageX, pageWidth)}
@@ -163,58 +181,21 @@ const ContentV2 = () => {
               >
                 <CommentCard
                   onCommentsChange={cb => {
-                    return Comments
-                      .onChange({ ...baseCtx, threadId: id }, snap => {
-                        cb(
-                          snap
-                            .docs
-                            .map(doc => {
-                              const { id } = doc
-                              const { user, ...data } = doc.data()
-
-                              return {
-                                ...data,
-                                id,
-                                userId: user,
-                                user: users[user] || {
-                                  name: 'Anonymous'
-                                }
-                              }
-                            })
-                            .reduce((acc, doc) => {
-                              const front = acc.slice(0, -1)
-                              const [last] = acc.slice(-1)
-
-                              if (!last) return acc.concat(doc)
-                              if (last.userId !== doc.userId) return acc.concat(doc)
-
-                              const content = []
-                                .concat(last.content)
-                                .concat(doc.content)
-
-                              return front.concat({ ...doc, content })
-                            }, [])
-                        )
+                    chrome
+                      .runtime
+                      .sendMessage({
+                        type: 'SUB_COMMENTS',
+                        ctx: { ...baseCtx, threadId: id }
                       })
                   }}
 
                   onSubmit={content => {
-                    const threadPromise = !threadData.created
-                      ? Threads.create(baseCtx, threadData)
-                      : Promise.resolve({ id })
+                    chrome
+                      .runtime
+                      .sendMessage({
+                        type: 'INIT_THREAD',
+                        ctx: { ...baseCtx, threadId: id },
 
-                    threadPromise
-                      .catch(err => console.error(err))
-                      .then(thread => {
-                        debugger
-                        Comments
-                          .create(
-                            { ...baseCtx, threadId: thread.id },
-                            {
-                              content,
-                              user: me.uid
-                            }
-                          )
                       })
                   }}
                 />

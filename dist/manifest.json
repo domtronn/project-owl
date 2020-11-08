@@ -20,6 +20,8 @@
     "persistent": true
   },
   "permissions": [
+    "activeTab",
+    "tabs",
     "identity",
     "https://*/*"
   ],
@@ -42,4 +44,3 @@
     }
   ]
 }
-  
