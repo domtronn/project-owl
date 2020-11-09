@@ -220,7 +220,7 @@ const initialiseListeners = () => {
             team,
             memberProfiles
           ))
-        })
+        }, err => console.error('TEAM_SNAPSHOT // Subscription failed', err))
 
   return [
     pageslistener,
