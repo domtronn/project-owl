@@ -191,7 +191,10 @@ export default ({ user }) => {
             </motion.div>
           ))}
 
-        <Button variant='primary'>
+        <Button
+          disabled={selectedTeams.length === 0}
+          variant='primary'
+        >
           Join teams
         </Button>
       </form>

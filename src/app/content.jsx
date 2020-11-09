@@ -26,16 +26,14 @@ const states = {
   EDIT: 'edit'
 }
 
-const users = {
-}
-
 const ContentV2 = () => {
   const [state, setState] = React.useState(states.VIEW)
 
-  const [team] = React.useState({ id: TEAM_ID })
+  const [team, setTeam] = React.useState({ id: TEAM_ID })
 
   const [me, setMe] = React.useState({})
   const [page, setPage] = React.useState({})
+  const [users, setUsers] = React.useState({})
 
   const [initThreads, setInitThreads] = React.useState(true)
   const [currThread, setCurrThread] = React.useState()
@@ -50,6 +48,8 @@ const ContentV2 = () => {
   console.log('ctx//', baseCtx)
   console.log('page//', page)
   console.log('me//', me)
+  console.log('users//', users)
+  console.log('team//', team)
 
   /** Listen to change events */
   React.useEffect(() => {
@@ -58,30 +58,13 @@ const ContentV2 = () => {
       .onMessage
       .addListener(({ type, ...data }) => sw({
         PUB_USER: ({ user }) => setMe(user || {}),
-        PUB_PAGE: ({ page }) => setPage(page || {})
+        PUB_PAGE: ({ page }) => setPage(page || {}),
+        PUB_TEAM: ({ users, team }) => {
+          setTeam(team || {})
+          setUsers(users || {})
+        }
       })(type, data))
   }, [])
-
-  /** Load authenticated user data */
-  React.useEffect(() => {
-    chrome
-      .runtime
-      .sendMessage({ type: 'GET_USER' }, user => setMe(user || {}))
-  }, [])
-
-  /** Load associated page data */
-  React.useEffect(() => {
-    if (!me.uid) return
-
-    chrome
-      .runtime
-      .sendMessage(
-        {
-          type: 'GET_PAGE',
-          href: window.location.href
-        },
-        page => setPage(page || {}))
-  }, [me.uid])
 
   /** Set timeout to animate in thread bubbles */
   React.useEffect(() => {
