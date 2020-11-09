@@ -8,6 +8,7 @@ import { Button } from '../../common/components/button'
 import { Checkbox } from '../../common/components/checkbox'
 
 import Skeleton from '../../common/components/skeleton'
+import AnimWrapper from '../../common/helpers/anim-wrapper'
 
 const countMembers = (members) => +Object
       .entries(members)
@@ -191,12 +192,16 @@ export default ({ user }) => {
             </motion.div>
           ))}
 
-        <Button
-          disabled={selectedTeams.length === 0}
-          variant='primary'
+        <AnimWrapper
+          condition={excluded.length > 0}
         >
-          Join teams
-        </Button>
+          <Button
+            disabled={selectedTeams.length === 0}
+            variant='primary'
+          >
+            Join teams
+          </Button>
+        </AnimWrapper>
       </form>
     </>
   )

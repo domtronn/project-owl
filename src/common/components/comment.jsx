@@ -7,7 +7,8 @@ const FALLBACK_IMG = 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portra
 export const Comment = ({
   img = FALLBACK_IMG,
   title,
-  subtitle
+  subtitle,
+  subtitleHover
 }) => (
   <div className='comment'>
     <img
@@ -22,7 +23,7 @@ export const Comment = ({
     />
     <div className='comment__content'>
       <p>{title}</p>
-      <p>{subtitle}</p>
+      <p><span title={subtitleHover || subtitle}>{subtitle}</span></p>
     </div>
   </div>
 )

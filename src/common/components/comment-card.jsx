@@ -1,10 +1,11 @@
 import * as React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 import { Card } from './card.jsx'
 import { Button } from './button.jsx'
 import { Input } from './input.jsx'
 import { Comment } from './comment.jsx'
+
+import AnimWrapper from '../helpers/anim-wrapper'
 
 import './comment-card.css'
 
@@ -37,25 +38,16 @@ const ChatForm = ({
         onChange={e => setComment(e.target.value)}
       />
 
-      <AnimatePresence>
-        {
-          comment.length > 0 && (
-            <motion.div
-              style={{ overflowY: 'hidden' }}
-              animate={{ height: 48 + 8 }}
-              initial={{ height: 0 }}
-              exit={{ height: 0 }}
-            >
-              <Button
-                type='submit'
-                variant='primary'
-              >
-                {submit}
-              </Button>
-            </motion.div>
-          )
-        }
-      </AnimatePresence>
+      <AnimWrapper
+        condition={comment.length > 0}
+      >
+        <Button
+          type='submit'
+          variant='primary'
+        >
+          {submit}
+        </Button>
+      </AnimWrapper>
     </form>
   )
 }
@@ -72,12 +64,13 @@ const WithComments = ({ comments, onSubmit }) => (
   <>
     {
       comments
-        .map(({ user, created, content }, i) => (
+        .map(({ user, created, displayDate, displayText, content }, i) => (
           <div key={`comment-${i}`}>
             <Comment
               img={user.avatar}
               title={user.name}
-              subtitle={created}
+              subtitle={displayText || created}
+              subtitleHover={displayDate}
             />
 
             {[]

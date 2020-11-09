@@ -14,6 +14,7 @@ import { Toggle } from '../common/components/toggle'
 import CommentCard from '../common/components/comment-card'
 
 import sw from './utils/switch'
+import date from './utils/date'
 
 const normalise = (x, viewport) => {
   const diff = viewport - window.outerWidth
@@ -200,6 +201,11 @@ const ContentV2 = () => {
 
                         return front.concat({ ...doc, content })
                       }, [])
+                      .map(({ created, ...rest }) => ({
+                        ...rest,
+                        displayDate: date(created).format('ddd h:mm A, D MMM'),
+                        displayText: date(created).calendar()
+                      }))
                   }
                 />
               </Bubble>
