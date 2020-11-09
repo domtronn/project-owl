@@ -186,7 +186,7 @@ const publishTeamUpdate = (href, team, users) => {
 
 const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
-const initialiseListeners = () => {
+const initialiseListeners = (user) => {
   const db = firebase.firestore()
   const pageslistener = db
         .collection(`/teams/${TEAM_ID}/pages`)
@@ -204,6 +204,22 @@ const initialiseListeners = () => {
         .onSnapshot(async teamSnapshot => {
           log(`TEAM_SNAPSHOT // ${TEAM_ID} // Teams updated`)
           const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
+
+          // if user permission within a team has changed then refresh data
+          if (
+            ((UserState.team || {}).members || {})[user.uid] !== team.members[user.uid]
+          ) {
+            log('TEAM_SNAPSHOT // Your team permissions have changed, refreshing listeners')
+            debugger
+
+            // Publish empty page data
+            publishAuthUpdate(user)
+            ;(UserState.pages || []).forEach(({ href }) => publishPageUpdate({ href }))
+
+            UserState = { ...UserState, pages: [] }
+            listeners.forEach(unsub => unsub())
+            listeners = initialiseListeners(user)
+          }
           UserState = { ...UserState, team }
 
           const members = Object.keys(team.members)
@@ -215,10 +231,10 @@ const initialiseListeners = () => {
           )
 
           UserState = { ...UserState, users: memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {}) }
-          UserState.pages.forEach(page => publishTeamUpdate(
+          ;(UserState.pages || []).forEach(page => publishTeamUpdate(
             page.href,
             team,
-            memberProfiles
+            memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {})
           ))
         }, err => console.error('TEAM_SNAPSHOT // Subscription failed', err))
 
@@ -235,17 +251,19 @@ window.onload = () => {
       log('AUTH_CHANGE // ', user)
       publishAuthUpdate(user)
 
-      UserState = user ?  { ...UserState, user } : {}
+      if (user) user.reload()
+
+      UserState = user ? { ...UserState, user } : {}
       user
-        ? listeners = initialiseListeners()
-        : (listeners || []).forEach(unsub => unsub())
+        ? listeners = initialiseListeners(user)
+        : (listeners || []).forEach(unsub => unsub && unsub())
     })
 
   chrome.tabs.onUpdated.addListener((tab, { status }) => {
     if (status !== 'complete') return
 
     chrome.tabs.get(tab, tab => {
-      const page = UserState.pages.find(page => page.href === tab.url)
+      const page = (UserState.pages || []).find(page => page.href === tab.url)
       if (!page) return
 
       log('TAB_CHANGE // Tab updated, publishing events')

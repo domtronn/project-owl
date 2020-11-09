@@ -1,3 +1,4 @@
+/* global chrome */
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
@@ -16,85 +17,105 @@ import Teams from './pages/teams'
 
 import { Button } from '../common/components/button'
 
+import sw from '../app/utils/switch'
+
+const { sendMessage, onMessage } = chrome.runtime
+const { useEffect, useState } = React
 const states = {
   LOGIN: 'login',
   REGISTER: 'register',
+  VERIFY_EMAIL: 'verify-email',
+
   CREATE_TEAM: 'create-team',
-  INVITE_TEAM: 'invite-team',
+  JOIN_TEAM: 'join-team',
+
+  DASHBOARD: 'dashboard',
+
   COMPLETE: 'complete',
-  LOADING: 'loading'
+  LOADING: 'loading',
 }
 
 const Popup = () => {
-  const [state, setState] = React.useState(states.LOADING)
-  const [user, setUser] = React.useState()
+  const [state, setState] = useState(states.LOADING)
+  const [user, setUser] = useState()
 
-  React.useEffect(() => {
-    chrome.runtime.onMessage.addListener((message) => {
+  useEffect(() => {
+    onMessage.addListener((message) => {
       switch (message.type) {
       case 'GOOGLE_USER':
-        setUser(message.user || {})
-        setState(states.COMPLETE)
+        setUser(message.user)
+        setState(states.DASHBOARD)
         break
       }
     })
 
-    chrome.runtime.sendMessage({ type: 'GET_USER' }, user => {
-      setUser(user || {})
-      setState(user ? states.COMPLETE : states.LOGIN)
+    sendMessage({ type: 'GET_USER' }, user => {
+      setUser(user)
+      setState(user ? states.DASHBOARD : states.LOGIN)
     })
   }, [])
+
+  useEffect(() => {
+    if (!user || !user.uid) return
+
+    user.emailVerified
+      ? setState(states.DASHBOARD)
+      : setState(states.VERIFY_EMAIL)
+  }, [user])
 
   return (
     <>
       <em>commentable</em>
 
-      {state === states.LOGIN && (
-        <Login
-          onRegister={_ => setState(states.REGISTER)}
-          onLoginSuccess={_ => setState(states.COMPLETE)}
-        />
-      )}
+      {sw({
+        [states.LOGIN]: () => (
+          <Login
+            onRegister={_ => setState(states.REGISTER)}
+            onLoginSuccess={_ => setState(states.DASHBOARD)}
+          />
+        ),
 
-      {state === states.REGISTER && (
-        <Register
-          onLogin={_ => setState(states.LOGIN)}
-          onRegisterSuccess={_ => setState(states.COMPLETE)}
-        />
-      )}
+        [states.REGISTER]: () => (
+          <Register
+            onLogin={_ => setState(states.LOGIN)}
+            onRegisterSuccess={_ => setState(states.DASHBOARD)}
+          />
+        ),
 
-      {state === states.COMPLETE && (
-        <>
-          {user.emailVerified && (
+        [states.VERIFY_EMAIL]: () => (
+          <>
+            <p>Please verify your email address</p>
+            <Button
+              variant='primary'
+              onClick={() => sendMessage({ type: 'VERIFY_USER' })}
+            >
+              Send verification email
+            </Button>
+          </>
+        ),
+
+        [states.DASHBOARD]: () => (
+          <>
             <Teams
               user={user}
             />
-          )}
+          </>
+        )
+      })(state)}
 
-          {!user.emailVerified && (
-            <>
-              <p>Please verify your email address</p>
-              <Button
-                variant='primary'
-                onClick={() => chrome.runtime.sendMessage({ type: 'VERIFY_USER' })}
-              >
-                Send verification email
-              </Button>
-            </>
-          )}
-
+      {
+        user && user.emailVerified && (
           <Button
             onClick={() =>
               firebase
                 .auth()
                 .signOut()
-                .then(() => setState(states.LOGIN))
-            }
+                .then(() => setState(states.LOGIN))}
           >
             Sign out
           </Button>
-        </>
-      )}
+        )
+      }
 
       <p>
         <a>Terms</a>
