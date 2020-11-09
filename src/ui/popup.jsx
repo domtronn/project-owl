@@ -13,7 +13,8 @@ import '../styles/popup.css'
 
 import Login from './pages/login'
 import Register from './pages/register'
-import Teams from './pages/teams'
+
+import TeamSelector from './pages/team-selector.jsx'
 
 import { Button } from '../common/components/button'
 
@@ -49,8 +50,9 @@ const Popup = () => {
       }
     })
 
-    sendMessage({ type: 'GET_USER' }, user => {
-      setUser(user)
+    sendMessage({ type: 'GET_USER' }, ({ user = {}, profile = {} }) => {
+      console.log('profile', profile)
+      setUser({ ...user, ...profile })
       setState(user ? states.DASHBOARD : states.LOGIN)
     })
   }, [])
@@ -96,7 +98,7 @@ const Popup = () => {
 
         [states.DASHBOARD]: () => (
           <>
-            <Teams
+            <TeamSelector
               user={user}
             />
           </>

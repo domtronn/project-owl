@@ -3,10 +3,8 @@ import { firebase } from '../common/firebase'
 import 'firebase/auth'
 import 'firebase/firestore'
 
-import getUser from './bg-handlers/get-user'
 import googleAuthUser from './bg-handlers/google-auth-user'
 
-const TEAM_ID = 'lh17L5cm5ql8mJINikns'
 let UserState = {}
 
 const log = (...msg) => console.log(...msg)
@@ -39,8 +37,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (user) log('GET_USER // User already authenticated, reloading')
     if (user) user.reload()
 
-    log('GET_USER // Sending user response')
-    return sendResponse(user)
+    if (!user) return sendResponse(null)
+
+    log('GET_USER // Sending user response', user)
+    return sendResponse({
+      user,
+      profile: UserState.userProfile
+    })
   }
     // ----------------------------------------
 
@@ -188,60 +191,95 @@ const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }
 
 const initialiseListeners = (user) => {
   const db = firebase.firestore()
-  const pageslistener = db
-        .collection(`/teams/${TEAM_ID}/pages`)
-        .onSnapshot(pagesSnapshot => {
-          log('PAGES_SNAPSHOT // Page snapshot updated')
-          const pages = readSnapshot(pagesSnapshot)
-          UserState = { ...UserState, pages }
+  log(`LISTEN // listening to /users/${user.uid}`)
+  listeners.push(
+    db
+      .collection('/users')
+      .doc(user.uid)
+      .onSnapshot(userSnapshot => {
+        const user = userSnapshot.data()
 
-          pages.forEach(publishPageUpdate)
-        }, err => console.error('PAGES_SNAPSHOT // Subscription failed', err))
+        log('userdoc', user.team)
+        log('userstate', UserState.userProfile)
+        if (
+          !UserState.userProfile ||
+            (user &&
+             user.team &&
+             UserState.userProfile &&
+             UserState.userProfile.team !== user.team)
+        ) {
+          UserState = { ...UserState, userProfile: user }
+          publishAuthUpdate(UserState.user)
 
-  const teamslistener = db
-        .collection('/teams')
-        .doc(TEAM_ID)
-        .onSnapshot(async teamSnapshot => {
-          log(`TEAM_SNAPSHOT // ${TEAM_ID} // Teams updated`)
-          const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
+          ;(listeners || []).forEach(unsub => unsub())
+          listeners = []
+          initialiseListeners(UserState.user)
+          return
+        }
 
-          // if user permission within a team has changed then refresh data
-          if (
-            ((UserState.team || {}).members || {})[user.uid] !== team.members[user.uid]
-          ) {
-            log('TEAM_SNAPSHOT // Your team permissions have changed, refreshing listeners')
-            debugger
+        publishAuthUpdate(UserState.user)
+      })
+  )
 
-            // Publish empty page data
-            publishAuthUpdate(user)
-            ;(UserState.pages || []).forEach(({ href }) => publishPageUpdate({ href }))
+  const teamId = (UserState.userProfile || {}).team
+  log('read team id', teamId)
+  if (!teamId) return
 
-            UserState = { ...UserState, pages: [] }
-            listeners.forEach(unsub => unsub())
-            listeners = initialiseListeners(user)
-          }
-          UserState = { ...UserState, team }
+  log(`LISTEN // listening to /teams/${teamId}/pages`)
+  listeners.push(
+    db
+      .collection(`/teams/${teamId}/pages`)
+      .onSnapshot(pagesSnapshot => {
+        log('PAGES_SNAPSHOT // Page snapshot updated')
+        const pages = readSnapshot(pagesSnapshot)
+        UserState = { ...UserState, pages }
 
-          const members = Object.keys(team.members)
-          const memberProfiles = await Promise.all(
-            members.map(uid => db.collection('/users').doc(uid).get().then(i => ({
-              id: uid,
-              ...i.data()
-            })))
-          )
+        pages.forEach(publishPageUpdate)
+      }, err => console.error('PAGES_SNAPSHOT // Subscription failed', err))
+  )
 
-          UserState = { ...UserState, users: memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {}) }
-          ;(UserState.pages || []).forEach(page => publishTeamUpdate(
-            page.href,
-            team,
-            memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {})
-          ))
-        }, err => console.error('TEAM_SNAPSHOT // Subscription failed', err))
+  log(`LISTEN // listening to /teams/${teamId}`)
+  listeners.push(
+    db
+      .collection('/teams')
+      .doc(teamId)
+      .onSnapshot(async teamSnapshot => {
+        log(`TEAM_SNAPSHOT // ${teamId} // Teams updated`)
+        const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
 
-  return [
-    pageslistener,
-    teamslistener
-  ]
+        // if user permission within a team has changed then refresh data
+        if (
+          ((UserState.team || {}).members || {})[user.uid] !== team.members[user.uid]
+        ) {
+          log('TEAM_SNAPSHOT // Your team permissions have changed, refreshing listeners')
+
+          // Publish empty page data
+          publishAuthUpdate(user)
+          ;(UserState.pages || []).forEach(({ href }) => publishPageUpdate({ href }))
+
+          UserState = { ...UserState, pages: [] }
+          listeners.forEach(unsub => unsub())
+          listeners = []
+          initialiseListeners(user)
+        }
+        UserState = { ...UserState, team }
+
+        const members = Object.keys(team.members)
+        const memberProfiles = await Promise.all(
+          members.map(uid => db.collection('/users').doc(uid).get().then(i => ({
+            id: uid,
+            ...i.data()
+          })))
+        )
+
+        UserState = { ...UserState, users: memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {}) }
+        ;(UserState.pages || []).forEach(page => publishTeamUpdate(
+          page.href,
+          team,
+          memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {})
+        ))
+      }, err => console.error('TEAM_SNAPSHOT // Subscription failed', err))
+  )
 }
 
 window.onload = () => {

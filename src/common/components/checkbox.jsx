@@ -7,10 +7,11 @@ export const Checkbox = ({
   name,
   children,
   style = {},
+  type = 'checkbox',
   ...rest
 }) => (
   <label style={style} className='checkbox' name={name}>
-    <input {...rest} type='checkbox' />
+    <input {...rest} type={type} />
     <div>
       <div className='checkbox__check'>
         <Check />
