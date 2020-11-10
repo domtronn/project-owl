@@ -47,6 +47,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
     // ----------------------------------------
 
+  case 'GET_TEAM': {
+    log('GET_TEAM // Fetching team for user')
+
+    const teamId = (UserState.team || {}).id
+    const uid = (UserState.user || {}).uid
+
+    if (teamId !== uid) log('GET_TEAM // Team ID did not match users current team')
+    if (teamId !== uid) return sendResponse({})
+
+    log('GET_TEAM // Team found', UserState.team)
+    return sendResponse(UserState.team)
+  }
+
     // ----------------------------------------
     /**
      * GET_PAGE
@@ -100,6 +113,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .set({ ...newPage, updated: new Date().toISOString() }, { merge: true})
     break
   }
+
+  case 'CREATE_PAGE': {
+    const { ctx, href } = message
+    log(`CREATE_PAGE // Creating page ${href} for ${ctx.teamId}`)
+
+    const newPage = {
+      href,
+      created: new Date().toISOString(),
+      threads: { }
+    }
+
+    firebase
+      .firestore()
+      .collection(`/teams/${ctx.teamId}/pages/`)
+      .add(newPage)
+    break
+  }
+
   case 'DELETE_THREAD':
     break
 
@@ -162,10 +193,10 @@ const publishPageUpdate = (page) => {
   })
 }
 
-const publishAuthUpdate = (user) => {
+const publishAuthUpdate = (user, type = `CHANGE`) => {
   chrome.tabs.query({}, tabs => {
-    log(`AUTH_CHANGE // Publishing change to ${tabs.length} tabs`)
-    log('AUTH_CHANGE // ', user)
+    log(`AUTH_${type} // Publishing change to ${tabs.length} tabs`)
+    log(`AUTH_${type} // `, user)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_USER',
@@ -175,7 +206,7 @@ const publishAuthUpdate = (user) => {
 }
 
 const publishTeamUpdate = (href, team, users) => {
-  chrome.tabs.query({}, tabs => {
+  chrome.tabs.query({ url: href }, tabs => {
     log(`TEAM_CHANGE // Publishing change to ${tabs.length} tabs`)
     log('TEAM_CHANGE // ', team, users)
 
@@ -191,6 +222,7 @@ const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }
 
 const initialiseListeners = (user) => {
   const db = firebase.firestore()
+  log(`LISTEN // Currently there are ${listeners.length} listeners`)
   log(`LISTEN // listening to /users/${user.uid}`)
   listeners.push(
     db
@@ -209,7 +241,7 @@ const initialiseListeners = (user) => {
              UserState.userProfile.team !== user.team)
         ) {
           UserState = { ...UserState, userProfile: user }
-          publishAuthUpdate(UserState.user)
+          publishAuthUpdate(UserState.user, 'UPDATE')
 
           ;(listeners || []).forEach(unsub => unsub())
           listeners = []
@@ -217,7 +249,7 @@ const initialiseListeners = (user) => {
           return
         }
 
-        publishAuthUpdate(UserState.user)
+        publishAuthUpdate(UserState.user, 'UPDATE')
       })
   )
 
@@ -254,7 +286,7 @@ const initialiseListeners = (user) => {
           log('TEAM_SNAPSHOT // Your team permissions have changed, refreshing listeners')
 
           // Publish empty page data
-          publishAuthUpdate(user)
+          publishAuthUpdate(user, 'UPDATE')
           ;(UserState.pages || []).forEach(({ href }) => publishPageUpdate({ href }))
 
           UserState = { ...UserState, pages: [] }
@@ -292,9 +324,8 @@ window.onload = () => {
       if (user) user.reload()
 
       UserState = user ? { ...UserState, user } : {}
-      user
-        ? listeners = initialiseListeners(user)
-        : (listeners || []).forEach(unsub => unsub && unsub())
+      ;(listeners || []).forEach(unsub => unsub && unsub())
+      user && initialiseListeners(user)
     })
 
   chrome.tabs.onUpdated.addListener((tab, { status }) => {
@@ -302,12 +333,11 @@ window.onload = () => {
 
     chrome.tabs.get(tab, tab => {
       const page = (UserState.pages || []).find(page => page.href === tab.url)
-      if (!page) return
 
       log('TAB_CHANGE // Tab updated, publishing events')
-      publishAuthUpdate(UserState.user)
-      publishPageUpdate(page)
-      publishTeamUpdate(tab.url, UserState.team, UserState.users)
+      UserState.user && publishAuthUpdate(UserState.user, 'UPDATE')
+      UserState.team && publishTeamUpdate(tab.url, UserState.team, UserState.users)
+      page && publishPageUpdate(page)
     })
   })
 }

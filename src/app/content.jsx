@@ -8,6 +8,7 @@ import { v4 as uuid } from 'uuid'
 import { motion } from 'framer-motion'
 
 import { Bubble } from '../common/components/bubble'
+import { Button } from '../common/components/button'
 import { Card } from '../common/components/card'
 import { Toggle } from '../common/components/toggle'
 
@@ -16,28 +17,31 @@ import CommentCard from '../common/components/comment-card'
 import sw from './utils/switch'
 import date from './utils/date'
 
+
 const normalise = (x, viewport) => {
   const diff = viewport - window.outerWidth
   return x - (diff / 2)
 }
 
-const TEAM_ID = 'lh17L5cm5ql8mJINikns'
+const { useState, useEffect } = React
+const { sendMessage, onMessage } = chrome.runtime
+
 const states = {
   VIEW: 'view',
   EDIT: 'edit'
 }
 
 const ContentV2 = () => {
-  const [state, setState] = React.useState(states.VIEW)
+  const [state, setState] = useState(states.VIEW)
 
-  const [team, setTeam] = React.useState({ id: TEAM_ID })
+  const [team, setTeam] = useState({})
 
-  const [me, setMe] = React.useState({})
-  const [page, setPage] = React.useState({})
-  const [users, setUsers] = React.useState({})
+  const [me, setMe] = useState({})
+  const [page, setPage] = useState({})
+  const [users, setUsers] = useState({})
 
-  const [initThreads, setInitThreads] = React.useState(true)
-  const [currThread, setCurrThread] = React.useState()
+  const [initThreads, setInitThreads] = useState(true)
+  const [currThread, setCurrThread] = useState()
 
   const baseCtx = {
     teamId: team.id,
@@ -53,10 +57,8 @@ const ContentV2 = () => {
   console.log('team//', team)
 
   /** Listen to change events */
-  React.useEffect(() => {
-    chrome
-      .runtime
-      .onMessage
+  useEffect(() => {
+    onMessage
       .addListener(({ type, ...data }) => sw({
         PUB_USER: ({ user }) => setMe(user || {}),
         PUB_PAGE: ({ page }) => setPage(page || {}),
@@ -67,8 +69,15 @@ const ContentV2 = () => {
       })(type, data))
   }, [])
 
+
+  /** Load authenticated user data */
+  useEffect(() => {
+    // sendMessage({ type: 'GET_USER' }, ({ user, profile }) => setMe({ ...user, ...profile }))
+    // sendMessage({ type: 'GET_TEAM' }, (team) => setTeam(team))
+  }, [])
+
   /** Set timeout to animate in thread bubbles */
-  React.useEffect(() => {
+  useEffect(() => {
     if (!page.id) return
     if (!initThreads) return
 
@@ -77,7 +86,30 @@ const ContentV2 = () => {
   }, [page.id])
 
   /** Don't activate if user logged out or page not present */
-  if (!page.id || !me.uid) return null
+  if (!me.uid) return null
+
+  if (!page.id) {
+    return (
+      <Card
+        style={{
+          position: 'fixed',
+          right: '32px',
+          bottom: '32px'
+        }}
+      >
+        <Button
+          variant='primary'
+          onClick={() => sendMessage({
+            type: 'CREATE_PAGE',
+            href: window.location.href,
+            ctx: baseCtx
+          })}
+        >
+          Create new page
+        </Button>
+      </Card>
+    )
+  }
 
   return (
     <motion.div
@@ -166,14 +198,12 @@ const ContentV2 = () => {
                           ? 'ADD_COMMENT'
                           : 'CREATE_THREAD'
 
-                    chrome
-                      .runtime
-                      .sendMessage({
-                        type,
-                        ctx: baseCtx,
-                        threadData: { id, ...threadData },
-                        commentData: { content, user: me.uid }
-                      })
+                    sendMessage({
+                      type,
+                      ctx: baseCtx,
+                      threadData: { id, ...threadData },
+                      commentData: { content, user: me.uid }
+                    })
                   }}
 
                   comments={

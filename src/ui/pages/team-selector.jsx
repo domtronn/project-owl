@@ -50,6 +50,7 @@ export default ({ user }) => {
         const teamsRef = await firebase
               .firestore()
               .collection('/teams')
+              .where(`members.${user.uid}`, '==', true)
               .get()
 
         const res = []

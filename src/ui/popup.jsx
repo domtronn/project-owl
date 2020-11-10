@@ -50,9 +50,10 @@ const Popup = () => {
       }
     })
 
-    sendMessage({ type: 'GET_USER' }, ({ user = {}, profile = {} }) => {
-      console.log('profile', profile)
-      setUser({ ...user, ...profile })
+    sendMessage({ type: 'GET_USER' }, (payload) => {
+      const { user, profile } = payload || {}
+
+      setUser(Object.assign({}, user, profile))
       setState(user ? states.DASHBOARD : states.LOGIN)
     })
   }, [])
