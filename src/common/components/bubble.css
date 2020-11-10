@@ -18,3 +18,7 @@
 .commentable .bubble:hover {
   cursor: pointer;
 }
+
+.commentable .bubble--resolved {
+  background-color: var(--primary-faded);
+}

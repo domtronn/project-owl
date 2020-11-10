@@ -8,10 +8,15 @@ export const Bubble = ({
   y,
   children,
   delay = 0,
+  resolved = false,
   isOpen = false,
   onClick = _ => _
 }) => {
   if (!x || !y) return null
+
+  const cn = resolved
+        ? 'bubble bubble--resolved'
+        : 'bubble'
 
   return (
     <>
@@ -42,7 +47,7 @@ export const Bubble = ({
         onClick={() => onClick()}
 
         style={{ top: y, left: x, zIndex: isOpen ? 200 : 100 }}
-        className='bubble'
+        className={cn}
       />
     </>
   )

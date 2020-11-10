@@ -8,16 +8,37 @@ import { Comment } from './comment.jsx'
 import sw from '../../app/utils/switch'
 import AnimWrapper from '../helpers/anim-wrapper'
 
-import { FiCheckCircle as CheckCircle, FiLock as Lock } from 'react-icons/fi'
+import {
+  FiCheckCircle as CheckCircle,
+  FiLock as Lock,
+  FiUnlock as Unlock,
+  FiMoreVertical as More,
+  FiTrash2 as Delete,
+  FiXCircle as Close,
+} from 'react-icons/fi'
 
 import './comment-card.css'
+
+const { useState } = React
+
+const IconLink = ({ Icon = _ => null, onClick, children }) => (
+  <li>
+    <a
+      onClick={onClick}
+      className='l l--secondary'
+    >
+  <Icon style={{ marginBottom: -2, marginRight: 6 }} />
+      {children}
+    </a>
+  </li>
+)
 
 const ChatForm = ({
   onSubmit,
   placeholder,
   submit
 }) => {
-  const [comment, setComment] = React.useState('')
+  const [comment, setComment] = useState('')
 
   return (
     <form
@@ -89,7 +110,12 @@ const Comments = ({ comments, resolved }) =>
         </div>
       ))
 
-const WithComments = ({ comments, onSubmit, onResolve }) => (
+const WithComments = ({
+  comments,
+  onSubmit,
+  onResolve,
+  onDelete
+}) => (
   <>
     <a
       className='commentcard__resolve'
@@ -98,6 +124,11 @@ const WithComments = ({ comments, onSubmit, onResolve }) => (
       <CheckCircle />
       Resolve
     </a>
+
+    <MoreMenu>
+      <IconLink Icon={CheckCircle} onClick={onResolve}>Resolve</IconLink>
+      <IconLink Icon={Delete} onClick={onDelete}>Delete</IconLink>
+    </MoreMenu>
 
     <Comments comments={comments} />
 
@@ -109,12 +140,60 @@ const WithComments = ({ comments, onSubmit, onResolve }) => (
   </>
 )
 
-const Resolved = ({ comments, resolver, onUnresolve, onSubmit }) => (
+const MoreMenu = ({ children }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [closeTimeout, setCloseTimeout] = useState()
+
+  React.useEffect(() => setCloseTimeout(
+    setTimeout(() => setIsOpen(false), 5000)
+  ), [])
+
+  return (
+    <>
+      <More
+        onClick={_ => setIsOpen(!isOpen)}
+        className='commentcard__more'
+      />
+      <AnimWrapper
+        className='commentcard__more__content'
+        condition={isOpen}
+        style={{ overflow: 'visible' }}
+
+        onMouseEnter={_ => clearTimeout(closeTimeout)}
+        onMouseLeave={_ => setCloseTimeout(
+          setTimeout(() => setIsOpen(false), 500)
+        )}
+      >
+        <Card>
+          <ul>
+            {children}
+            <IconLink Icon={Close} onClick={_ => setIsOpen(false)}>Close</IconLink>
+          </ul>
+        </Card>
+      </AnimWrapper>
+    </>
+  )}
+
+const Resolved = ({
+  comments,
+  resolver,
+  onUnresolve,
+  onSubmit,
+  onDelete,
+}) => (
   <>
-    <span className='commentcard__resolve'>
+    <span
+      className='commentcard__resolve'
+      title={`Resolved ${resolver.atText.toLowerCase()} by ${resolver.name}`}
+    >
       <Lock />
       Resolved
     </span>
+
+    <MoreMenu>
+      <IconLink Icon={Unlock} onClick={onUnresolve}>Reopen</IconLink>
+      <IconLink Icon={Delete} onClick={onDelete}>Delete</IconLink>
+    </MoreMenu>
 
     <Comments
       comments={comments}
@@ -133,7 +212,13 @@ const Resolved = ({ comments, resolver, onUnresolve, onSubmit }) => (
       size='md'
       onClick={onUnresolve}
     >
-      Unresolve this thread
+      <Unlock
+        style={{
+          width: 12,
+          height: 12,
+          margin: '0 6px -2px -18px'
+        }}
+      /> Reopen this thread
     </Button>
   </>
 )

@@ -199,12 +199,15 @@ const ContentV2 = () => {
             const { pageX, pageY, pageWidth } = threadData
             return (
               <Bubble
+                key={id || `unknown--${i}`}
                 onClick={_ => setCurrThread(currThread === id ? null : id)}
                 isOpen={id === currThread}
+
+                resolved={threadData.resolved}
                 delay={initThreads ? i / 10 : 0}
+
                 x={normalise(pageX, pageWidth)}
                 y={pageY}
-                key={id || `unknown--${i}`}
               >
                 <CommentCard
                   resolved={threadData.resolved}
@@ -212,11 +215,18 @@ const ContentV2 = () => {
                     users[threadData.resolvedBy]
                       ? {
                         ...users[threadData.resolvedBy],
-                        atText: date(threadData.resolvedAt).calendar(),
+                        atText: date(threadData.resolvedAt).calendar(null, {
+                          sameDay: '[Today at] h:mma'
+                        }),
                         atDate: date(threadData.resolvedAt).format('ddd h:mm A, D MMM'),
                       }
                       : null
                   }
+
+                  onDelete={_ => {
+                    if (!window.confirm('Are you sure you want to delete this thread?\nThis action cannot be undone.')) return
+                    sendMessage({ type: 'DELETE_THREAD', ctx: baseCtx, id })
+                  }}
 
                   onUnresolve={_ => {
                     sendMessage({ type: 'UNRESOLVE_THREAD', ctx: baseCtx, id })

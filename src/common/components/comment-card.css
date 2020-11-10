@@ -31,11 +31,39 @@
 }
 
 .commentable .commentcard__resolve {
+  z-index: 20;
+  line-height: 20px;
+  font-size: var(--t-rg);
   color: var(--primary);
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 4px;
+  right: 32px;
+  padding-top: 12px;
   text-decoration: none;
+}
+
+.commentable .commentcard__more {
+  top: 14px;
+  right: 6px;
+  z-index: 20;
+  position: absolute;
+  height: 16px;
+  padding: 4px 6px;
+  transition: color 0.2s ease-in-out;
+  color: var(--grey);
+}
+
+.commentable .commentcard__more__content {
+  width: 120px;
+  position: absolute;
+  right: -100px;
+  top: 16px;
+  z-index: 400;
+}
+
+.commentable .commentcard__more:hover {
+  cursor: pointer;
+  color: var(--primary);
 }
 
 .commentable .commentcard__resolve svg {

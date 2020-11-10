@@ -1,6 +1,7 @@
 :root {
   --primary: #ff3d46;
   --primary-darken: #EE1A24;
+  --primary-faded: #fecdd0;
   --light: #f5f5f5;
   --light-darken: #ebebeb;
 
@@ -13,6 +14,15 @@
   --t-rg: 14px;
   --t-md: 16px;
   --t-lg: 20px;
+}
+
+.commentable ul {
+  list-style: none;
+  margin: -6px 0;
+}
+
+.commentable li {
+  margin: 6px 0;
 }
 
 .commentable * {
@@ -73,6 +83,11 @@
   text-decoration: none;
 }
 
+.commentable a *,
+.commentable .l * {
+  text-decoration: none;
+}
+
 .commentable a:hover,
 .commentable .l:hover,
 .commentable .l__sm:hover,
@@ -81,6 +96,10 @@
   cursor: pointer;
   border-bottom: 1px solid var(--primary);
 }
+
+.commentable .l--primary { color: var(--primary); }
+.commentable .l--secondary:hover { color: var(--primary); border-bottom-color: var(--primary); }
+.commentable .l--secondary { color: var(--grey); }
 
 .commentable .l__lg { font-size: var(--t-md); line-height: 24px; }
 .commentable .l__sm { font-size: var(--t-sm); line-height: 16px; }
