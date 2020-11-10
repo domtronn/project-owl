@@ -23,7 +23,7 @@ const normalise = (x, viewport) => {
   return x - (diff / 2)
 }
 
-const { useState, useEffect } = React
+const { useState, useEffect, useLayoutEffect } = React
 const { sendMessage, onMessage } = chrome.runtime
 
 const states = {
@@ -33,6 +33,7 @@ const states = {
 
 const ContentV2 = () => {
   const [state, setState] = useState(states.VIEW)
+  const [size, setSize] = useState([window.outerWidth, window.outerHeight])
 
   const [team, setTeam] = useState({})
 
@@ -69,6 +70,14 @@ const ContentV2 = () => {
       })(type, data))
   }, [])
 
+  useLayoutEffect(() => {
+    function updateSize () {
+      setSize([window.outerWidth, window.outerHeight])
+    }
+
+    window.addEventListener('resize', updateSize)
+    return () => window.removeEventListener('resize', updateSize)
+  })
 
   /** Load authenticated user data */
   useEffect(() => {
@@ -128,11 +137,10 @@ const ContentV2 = () => {
         <div
           onMouseDown={e => {
             const { pageX, pageY } = e
-            const { outerWidth } = window
             const thread = {
               id: uuid(),
               pageId: page.id,
-              pageWidth: outerWidth,
+              pageWidth: size[0],
               pageX,
               pageY
             }
