@@ -1,20 +1,19 @@
 import * as React from 'react'
 
-import { Card } from './card.jsx'
-import { Button } from './button.jsx'
-import { Input } from './input.jsx'
-import { Comment } from './comment.jsx'
+import { Card } from './card'
+import { Button } from './button'
+import { Mention } from './mention'
+import { Comment } from './comment'
 
 import sw from '../../app/utils/switch'
 import AnimWrapper from '../helpers/anim-wrapper'
 
 import { UsersContext } from '../../common/providers/users-provider'
 
-import { EditorState } from 'draft-js'
+import { EditorState, convertToRaw } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
 import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin'
 
-import '../../common/mentions.css'
 import '../../common/components/input.css'
 
 import {
@@ -28,7 +27,7 @@ import {
 
 import './comment-card.css'
 
-const { useState, useContext, useRef } = React
+const { useState, useContext, useRef, useEffect } = React
 
 const IconLink = ({ Icon = _ => null, onClick, children }) => (
   <li>
@@ -42,15 +41,24 @@ const IconLink = ({ Icon = _ => null, onClick, children }) => (
   </li>
 )
 
+const serialiseChat = (entityMap, comment) => (
+  Object
+    .values(entityMap)
+    .reduce((acc, { data }) =>
+      acc.replace(`@${data.mention.name}`, `[[:mention:][${data.mention.id}]]`),
+      comment
+    )
+)
+
 const ChatForm = ({
   onSubmit,
   placeholder,
   submit
 }) => {
   const users = Object.values(useContext(UsersContext))
-  const [comment, setComment] = useState('')
 
   const editorRef = useRef(null)
+  const [editorFocus, setEditorFocus] = useState(false)
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty()
   )
@@ -59,36 +67,52 @@ const ChatForm = ({
     mentions: users,
     entityMutability: 'IMMUTABLE',
     mentionPrefix: '@',
+    mentionComponent: ({ mention }) => (
+      <span className='editor__mention'>
+        @{mention.name}
+      </span>
+    ),
     supportWhitespace: true
   }))
   const [mentions, setMentions] = useState(users)
   const { MentionSuggestions } = mentionPlugin
 
+  useEffect(() => {
+    if (!editorRef) return
+    setTimeout(editorRef.current.focus, 5)
+  }, [editorRef])
+
+  const currentContent = editorState.getCurrentContent()
+  const comment = serialiseChat(
+    convertToRaw(currentContent).entityMap,
+    currentContent.getPlainText()
+  )
+
   return (
     <form
       onSubmit={e => {
         e.preventDefault()
-        setComment('')
+        setEditorState(EditorState.createEmpty())
         onSubmit(comment)
       }}
     >
-      <Input
-        autoFocus
-        type='text'
-        name='comment'
-        placeholder={`${placeholder.replace(/\.\.\.$/, '')}`}
-        value={comment}
-        onChange={e => setComment(e.target.value)}
-      />
-
-      <Editor
-        ref={editorRef}
-        editorState={editorState}
-        onChange={setEditorState}
-        plugins={[mentionPlugin]}
-      />
+      <div
+        onClick={_ => editorRef.current.focus()}
+        className={editorFocus ? 'editor editor--focus' : 'editor'}
+      >
+        <Editor
+          ref={editorRef}
+          placeholder={placeholder.replace(/\.\.\.$/, '') + '...'}
+          editorState={editorState}
+          onChange={setEditorState}
+          plugins={[mentionPlugin]}
+          onFocus={_ => setEditorFocus(true)}
+          onBlur={_ => setEditorFocus(true)}
+        />
+      </div>
       <MentionSuggestions
         suggestions={mentions}
+        entryComponent={Mention}
         onSearchChange={({ value }) => setMentions(
           defaultSuggestionsFilter(
             value,
@@ -96,7 +120,6 @@ const ChatForm = ({
           )
         )}
       />
-
       <AnimWrapper
         condition={comment.length > 0}
       >
@@ -113,43 +136,64 @@ const ChatForm = ({
 
 const NoComments = ({ onSubmit }) => (
   <ChatForm
-
     submit='Post'
     onSubmit={onSubmit}
     placeholder='Write a comment'
   />
 )
 
-const Comments = ({ comments, resolved }) =>
-      comments
-      .map(({ user, created, displayDate, displayText, content }, i) => (
-        <div
-          key={`comment-${i}`}
-          className={
-            [
-              'commentcard__comment',
-              resolved && 'commentcard__comment--resolved'
-            ].filter(i => i).join(' ')
-          }
-        >
-          <Comment
-            img={user.avatar}
-            title={user.name}
-            subtitle={displayText || created}
-            subtitleHover={displayDate}
-          />
+const Comments = ({ comments, resolved }) => {
+  const users = useContext(UsersContext)
 
-          {[]
-           .concat(content)
-           .map((c, i) => (
-             <p key={i} className='t t__sm'>
-               {c}
+  console.log(users)
+
+  return comments
+    .map(({ user, created, displayDate, displayText, content }, i) => (
+      <div
+        key={`comment-${i}`}
+        className={
+          [
+            'commentcard__comment',
+            resolved && 'commentcard__comment--resolved'
+          ].filter(i => i).join(' ')
+        }
+      >
+        <Comment
+          img={user.avatar}
+          title={user.name}
+          subtitle={displayText || created}
+          subtitleHover={displayDate}
+        />
+
+        {[]
+         .concat(content)
+         .map((c, i) => {
+           const split = (c || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
+
+           if (split.length === 1) return <p key={i}>{split}</p>
+
+           return (
+             <p key={i}>
+               {
+                 split.map((c, j) => {
+                   const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
+
+                   if (!user) return c
+                   return (
+                     <span data-uid={user} key={i} className='t t--primary'>
+                       @{(users[user] || {}).name || 'Anonymous'}
+                     </span>
+                   )
+                 })
+               }
              </p>
-           ))}
+           )
+         })}
 
-          {i !== comments.length - 1 && <hr />}
-        </div>
-      ))
+        {i !== comments.length - 1 && <hr />}
+      </div>
+    ))
+}
 
 const WithComments = ({
   comments,

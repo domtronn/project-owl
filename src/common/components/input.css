@@ -6,6 +6,8 @@
   border-radius: 4px;
 
   width: calc(100% - 32px);
+  max-width: calc(100% - 32px);
+
   padding: 0 16px;
   background-color: var(--light);
   color: var(--black);
@@ -14,7 +16,10 @@
   outline: none;
 }
 
-.commentable .editor { padding: 16px; }
+.commentable .editor {
+  padding: 16px;
+  min-height: auto;
+}
 
 .commentable input::placeholder {
   color: var(--grey);
@@ -24,4 +29,23 @@
 .commentable .editor--focus
 {
   border: 1px solid var(--primary);
+}
+
+.commentable .editor {
+  position: relative;
+  cursor: text;
+}
+
+.commentable .editor span {
+  font-size: var(--t-rg);
+}
+
+.commentable .editor .public-DraftEditorPlaceholder-root {
+  color: var(--grey);
+  position: absolute;
+}
+
+.commentable .editor .editor__mention {
+  color: var(--primary);
+  font-size: var(--t-rg);
 }

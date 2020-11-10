@@ -72,6 +72,8 @@
 
 .commentable .t--bold { font-weight: 600; }
 .commentable .t--light { color: var(--lightgrey); }
+.commentable .t--grey { color: var(--grey); }
+.commentable .t--primary { color: var(--primary); }
 
 /** Link text styling */
 .commentable a,

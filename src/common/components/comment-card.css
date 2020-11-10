@@ -1,6 +1,6 @@
 .commentable .commentcard {
   position: relative;
-  min-width: 320px;
+  width: 320px;
 }
 
 .commentable .commentcard__resolved {
