@@ -4,10 +4,37 @@ import 'firebase/auth'
 import 'firebase/firestore'
 
 import googleAuthUser from './bg-handlers/google-auth-user'
+import sw from './utils/switch'
 
 let UserState = {}
 
 const log = (...msg) => console.log(...msg)
+const logGreen = (...msg) => console.log(...msg, 'padding: 2px; background-color: #00f5d4; color: #000', '')
+const logRed = (...msg) => console.log(...msg, 'padding: 2px; background-color: #ef476f; color: #fff', '')
+const logBlue = (...msg) => console.log(...msg, 'padding: 2px; background-color: #00bbf9; color: #000', '')
+const logYellow = (...msg) => console.log(...msg, 'padding: 2px; background-color: #fee440; color: #000', '')
+const logMagenta = (...msg) => console.log(...msg, 'padding: 2px; background-color: #9b5de5; color: #fff', '')
+const logBoW = (...msg) => console.log(...msg, 'padding: 2px; background-color: #fff; color: #000', '')
+
+/** Smart log based on the scope of the message */
+const sLog = (m, ...rest) => sw({
+  [m.startsWith('GET')]: _ => logMagenta(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('CREATE')]: _ => logGreen(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('UPDATE')]: _ => logGreen(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('DELETE')]: _ => logRed(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_CHANGE')]: _ => logYellow(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_PUBLISH')]: _ => logBlue(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('LISTEN')]: _ => logBoW(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  default: _ => log(m, ...rest)
+})(true)
+
+logGreen('%cCREATE%c These message are used for creations')
+logRed('%cDELETE%c These message are used for document deletions')
+logBlue('%cUPDATE%c These are used for message updates')
+log('\n')
+logYellow('%cCHANGE%c This is used for changes to a document based on an event')
+logMagenta('%cREAD%c This is used for a client request')
+log('\n\n')
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
@@ -16,7 +43,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     break
 
   case 'VERIFY_USER':
-    log('VERIFY_USER // Got request to verify users email address')
+    sLog('VERIFY_USER // Got request to verify users email address')
     firebase
       .auth()
       .currentUser
@@ -29,17 +56,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
      * Retrieve the user profile for currently authenticated used
      */
   case 'GET_USER': {
-    log('GET_USER // Fetching user')
+    sLog('GET_USER // Fetching user')
     const user = firebase
           .auth()
           .currentUser
 
-    if (user) log('GET_USER // User already authenticated, reloading')
+    if (user) sLog('GET_USER // User already authenticated, reloading')
     if (user) user.reload()
 
     if (!user) return sendResponse(null)
 
-    log('GET_USER // Sending user response', user)
+    sLog('GET_USER // Sending user response')
+    log(user)
     return sendResponse({
       user,
       profile: UserState.userProfile
@@ -48,15 +76,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // ----------------------------------------
 
   case 'GET_TEAM': {
-    log('GET_TEAM // Fetching team for user')
+    sLog('GET_TEAM // Fetching team for user')
 
     const teamId = (UserState.team || {}).id
     const uid = (UserState.user || {}).uid
 
-    if (teamId !== uid) log('GET_TEAM // Team ID did not match users current team')
+    if (teamId !== uid) sLog('GET_TEAM // Team ID did not match users current team')
     if (teamId !== uid) return sendResponse({})
 
-    log('GET_TEAM // Team found', UserState.team)
+    sLog('GET_TEAM // Team found')
+    log(UserState.team)
+
     return sendResponse(UserState.team)
   }
 
@@ -67,27 +97,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
      */
   case 'GET_PAGE': {
     const { href } = message
-    log('GET_PAGE // Fetching page data for ', message)
+    sLog('GET_PAGE // Fetching page data for ')
+    log(message)
 
     const page = (UserState.pages || [])
           .find((page) => page.href === href)
 
-    if (!page) log('GET_PAGE // Page not found')
+    if (!page) sLog('GET_PAGE // Page not found')
     if (!page) return sendResponse({})
 
-    log('GET_PAGE // Page found', page)
+    sLog('GET_PAGE // Page found')
+    log(page)
     return sendResponse(page)
   }
     // ----------------------------------------
 
   case 'CREATE_THREAD': {
     const { commentData, threadData, ctx } = message
-    log(`CREATE_THREAD // Creating thread on page ${ctx.pageId} @(${threadData.pageX}, ${threadData.pageY})`)
+    sLog(`CREATE_THREAD // Creating thread on page ${ctx.pageId} @(${threadData.pageX}, ${threadData.pageY})`)
 
     const page = (UserState.pages || [])
           .find((page) => page.id === ctx.pageId)
 
-    if (!page) log('CREATE_THREAD // Page not found')
+    if (!page) sLog('CREATE_THREAD // Page not found')
     if (!page) return sendResponse({})
 
     const newPage = {
@@ -116,12 +148,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   case 'RESOLVE_THREAD': {
     const { id, ctx } = message
-    log(`RESOLVE_THREAD // Resolving thread ${id} on page ${ctx.pageId}`)
+    sLog(`RESOLVE_THREAD // Resolving thread ${id} on page ${ctx.pageId}`)
 
     const page = (UserState.pages || [])
           .find((page) => page.id === ctx.pageId)
 
-    if (!page) log('RESOLVE_THREAD // Page not found')
+    if (!page) sLog('RESOLVE_THREAD // Page not found')
     if (!page) return sendResponse({})
 
     const newPage = {
@@ -135,7 +167,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     }
 
-    log('RESOLVE_THREAD // New thread data', newPage)
+    sLog('RESOLVE_THREAD // New thread data')
+    log(newPage)
 
     firebase
       .firestore()
@@ -147,12 +180,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   case 'UNRESOLVE_THREAD': {
     const { id, ctx } = message
-    log(`UNRESOLVE_THREAD // Unresolving thread ${id} on page ${ctx.pageId}`)
+    sLog(`UNRESOLVE_THREAD // Unresolving thread ${id} on page ${ctx.pageId}`)
 
       const page = (UserState.pages || [])
             .find((page) => page.id === ctx.pageId)
 
-      if (!page) log('UNRESOLVE_THREAD // Page not found')
+      if (!page) sLog('UNRESOLVE_THREAD // Page not found')
       if (!page) return sendResponse({})
 
       const newPage = {
@@ -166,7 +199,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       }
 
-      log('UNRESOLVE_THREAD // New thread data', newPage)
+    sLog('UNRESOLVE_THREAD // New thread data')
+    log(newPage)
 
       firebase
         .firestore()
@@ -178,7 +212,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   case 'CREATE_PAGE': {
     const { ctx, href } = message
-    log(`CREATE_PAGE // Creating page ${href} for ${ctx.teamId}`)
+    sLog(`CREATE_PAGE // Creating page ${href} for ${ctx.teamId}`)
 
     const newPage = {
       href,
@@ -193,17 +227,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     break
   }
 
-  case 'DELETE_THREAD':
-    break
-
-  case 'ADD_COMMENT': {
-    const { commentData, threadData, ctx } = message
-    log(`ADD_COMMENT // Adding comment to ${threadData.id}`)
+  case 'DELETE_THREAD': {
+    const { ctx, id } = message
+    sLog(`DELETE_THREAD // Deleting thread ${id} on page ${ctx.pageId}`)
 
     const page = (UserState.pages || [])
           .find((page) => page.id === ctx.pageId)
 
-    if (!page) log('ADD_COMMENT // Page not found')
+    if (!page) sLog('DELETE_THREAD // Page not found')
+    if (!page) return sendResponse({})
+
+    const newPage = {
+      threads: {
+        [id]: firebase.firestore.FieldValue.delete()
+      }
+    }
+
+    sLog('DELETE_THREAD // New thread data')
+    log(newPage)
+
+    firebase
+      .firestore()
+      .collection(`/teams/${ctx.teamId}/pages/`)
+      .doc(ctx.pageId)
+      .set({ ...newPage, updated: new Date().toISOString() }, { merge: true })
+
+    break
+  }
+
+
+  case 'ADD_COMMENT': {
+    const { commentData, threadData, ctx } = message
+    sLog(`ADD_COMMENT // Adding comment to ${threadData.id}`)
+
+    const page = (UserState.pages || [])
+          .find((page) => page.id === ctx.pageId)
+
+    if (!page) sLog('ADD_COMMENT // Page not found')
     if (!page) return sendResponse({})
 
     const newPage = {
@@ -245,8 +305,8 @@ let listeners = []
 
 const publishPageUpdate = (page) => {
   chrome.tabs.query({ url: page.href }, tabs => {
-    log(`PAGE_PUBLISH // Publishing change to ${tabs.length} tabs`)
-    log('PAGE_PUBLISH // ', page)
+    sLog(`PAGE_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log(page)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_PAGE',
@@ -257,8 +317,8 @@ const publishPageUpdate = (page) => {
 
 const publishAuthUpdate = (user) => {
   chrome.tabs.query({}, tabs => {
-    log(`AUTH_PUBLISH // Publishing change to ${tabs.length} tabs`)
-    log(`AUTH_PUBLISH // `, user)
+    sLog(`AUTH_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log(user)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_USER',
@@ -269,8 +329,8 @@ const publishAuthUpdate = (user) => {
 
 const publishTeamUpdate = (href, team, users) => {
   chrome.tabs.query({ url: href }, tabs => {
-    log(`TEAM_PUBLISH // Publishing change to ${tabs.length} tabs`)
-    log('TEAM_PUBLISH //', team, users)
+    sLog(`TEAM_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log(team, users)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_TEAM',
@@ -284,8 +344,8 @@ const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }
 
 const initialiseListeners = (user) => {
   const db = firebase.firestore()
-  log(`LISTEN // Currently there are ${listeners.length} listeners`)
-  log(`LISTEN // listening to /users/${user.uid}`)
+  sLog(`LISTEN // Currently there are ${listeners.length} listeners`)
+  sLog(`LISTEN // listening to /users/${user.uid}`)
   listeners.push(
     db
       .collection('/users')
@@ -319,12 +379,12 @@ const initialiseListeners = (user) => {
   log('read team id', teamId)
   if (!teamId) return
 
-  log(`LISTEN // listening to /teams/${teamId}/pages`)
+  sLog(`LISTEN // listening to /teams/${teamId}/pages`)
   listeners.push(
     db
       .collection(`/teams/${teamId}/pages`)
       .onSnapshot(pagesSnapshot => {
-        log('PAGES_CHANGE // Page snapshot updated')
+        sLog('PAGES_CHANGE // Page snapshot updated')
         const pages = readSnapshot(pagesSnapshot)
         UserState = { ...UserState, pages }
 
@@ -332,20 +392,20 @@ const initialiseListeners = (user) => {
       }, err => console.error('PAGES_CHANGE // Subscription failed', err))
   )
 
-  log(`LISTEN // listening to /teams/${teamId}`)
+  sLog(`LISTEN // listening to /teams/${teamId}`)
   listeners.push(
     db
       .collection('/teams')
       .doc(teamId)
       .onSnapshot(async teamSnapshot => {
-        log(`TEAM_CHANGE // ${teamId} // Teams updated`)
+        sLog(`TEAM_CHANGE // ${teamId} // Teams updated`)
         const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
 
         // if user permission within a team has changed then refresh data
         if (
           ((UserState.team || {}).members || {})[user.uid] !== team.members[user.uid]
         ) {
-          log('TEAM_CHANGE // Your team permissions have changed, refreshing listeners')
+          sLog('TEAM_CHANGE // Your team permissions have changed, refreshing listeners')
 
           // Publish empty page data
           publishAuthUpdate(user, 'UPDATE')
@@ -380,7 +440,9 @@ window.onload = () => {
   firebase
     .auth()
     .onAuthStateChanged(user => {
-      log('AUTH_CHANGE // ', user)
+      sLog('AUTH_CHANGE // ')
+      log(user)
+
       publishAuthUpdate(user)
 
       if (user) user.reload()
@@ -396,7 +458,7 @@ window.onload = () => {
     chrome.tabs.get(tab, tab => {
       const page = (UserState.pages || []).find(page => page.href === tab.url)
 
-      log('TAB_CHANGE // Tab updated, publishing events')
+      sLog('TAB_CHANGE // Tab updated, publishing events')
       UserState.user && publishAuthUpdate(UserState.user, 'UPDATE')
       UserState.team && publishTeamUpdate(tab.url, UserState.team, UserState.users)
       page && publishPageUpdate(page)
