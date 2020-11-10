@@ -14,7 +14,8 @@ import '../styles/popup.css'
 import Login from './pages/login'
 import Register from './pages/register'
 
-import TeamSelector from './pages/team-selector.jsx'
+import TeamSelector from './pages/team-selector'
+import Dashboard from './pages/dashboard'
 
 import { Button } from '../common/components/button'
 
@@ -99,7 +100,7 @@ const Popup = () => {
 
         [states.DASHBOARD]: () => (
           <>
-            <TeamSelector
+            <Dashboard
               user={user}
             />
           </>

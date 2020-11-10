@@ -70,6 +70,10 @@
   line-height: 20px;
 }
 
+.commentable h6 {
+  text-align: left;
+}
+
 .commentable .t--bold { font-weight: 600; }
 .commentable .t--light { color: var(--lightgrey); }
 .commentable .t--grey { color: var(--grey); }

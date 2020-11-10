@@ -90,6 +90,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return sendResponse(UserState.team)
   }
 
+  case 'GET_MENTIONS': {
+    sLog('GET_MENTIONS // Fetching mentions of current user')
+    const pages = UserState.pages
+    const uid = UserState.user.uid
+
+    const mentions = pages
+          .map(({ href, threads }) => {
+            return [
+              href,
+              Object
+                .entries(threads)
+                .reduce((acc, [id, { comments }]) => {
+                  const mention = comments.find(({ content }) => content.includes(`[[:mention:][${uid}]]`))
+                  if (!mention) return acc
+
+                  return acc.concat([[id, mention]])
+                }, [])
+            ]
+          })
+
+    sLog(`GET_MENTIONS // `)
+    log(mentions)
+
+    sendResponse(mentions)
+  }
+
     // ----------------------------------------
     /**
      * GET_PAGE
@@ -255,6 +281,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     break
   }
 
+  case 'NEW_OPEN_THREAD': {
+    const { url, id } = message
+    chrome.tabs.create({ url }, tab => {
+      setTimeout(() => chrome.tabs.sendMessage(tab.id, { type: 'OPEN_THREAD', id }), 1000)
+    })
+    break
+  }
 
   case 'ADD_COMMENT': {
     const { commentData, threadData, ctx } = message

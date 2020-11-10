@@ -74,6 +74,11 @@ const ContentV2 = () => {
           console.log('setTeam', new Date())
           setTeam(team || {})
           setUsers(users || {})
+        },
+
+        OPEN_THREAD: ({ id }) => {
+          console.log('openThread', id)
+          setCurrThread(id)
         }
       })(type, data))
   }, [])

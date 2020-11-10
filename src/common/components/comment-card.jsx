@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { Card } from './card'
 import { Button } from './button'
-import { Mention } from './mention'
+import { Mention, ParseComment } from './mention'
 import { Comment } from './comment'
 
 import sw from '../../app/utils/switch'
@@ -167,28 +167,7 @@ const Comments = ({ comments, resolved }) => {
 
         {[]
          .concat(content)
-         .map((c, i) => {
-           const split = (c || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
-
-           if (split.length === 1) return <p key={i}>{split}</p>
-
-           return (
-             <p key={i}>
-               {
-                 split.map((c, j) => {
-                   const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
-
-                   if (!user) return c
-                   return (
-                     <span data-uid={user} key={i} className='t t--primary'>
-                       @{(users[user] || {}).name || 'Anonymous'}
-                     </span>
-                   )
-                 })
-               }
-             </p>
-           )
-         })}
+         .map((c, i) => <ParseComment key={i} content={c} users={users} />)}
 
         {i !== comments.length - 1 && <hr />}
       </div>

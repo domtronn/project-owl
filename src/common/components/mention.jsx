@@ -28,3 +28,25 @@ export const Mention = ({
     </div>
   )
 }
+
+export const ParseComment = ({ content: c, users }) => {
+  const split = (c || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
+
+  if (split.length === 1) return <p>{split}</p>
+  return (
+    <p>
+      {
+        split.map((c, j) => {
+          const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
+
+          if (!user) return c
+          return (
+            <span data-uid={user} key={j} className='t t--primary'>
+              @{(users[user] || {}).name || 'Anonymous'}
+            </span>
+          )
+        })
+      }
+    </p>
+  )
+}
