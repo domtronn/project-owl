@@ -5,14 +5,12 @@ import { Button } from './button.jsx'
 import { Input } from './input.jsx'
 import { Comment } from './comment.jsx'
 
+import sw from '../../app/utils/switch'
 import AnimWrapper from '../helpers/anim-wrapper'
 
-import './comment-card.css'
+import { FiCheckCircle as CheckCircle, FiLock as Lock } from 'react-icons/fi'
 
-const states = {
-  THREAD: 'thread',
-  COMMENT: 'comment',
-}
+import './comment-card.css'
 
 const ChatForm = ({
   onSubmit,
@@ -60,31 +58,48 @@ const NoComments = ({ onSubmit }) => (
   />
 )
 
-const WithComments = ({ comments, onSubmit }) => (
-  <>
-    {
+const Comments = ({ comments, resolved }) =>
       comments
-        .map(({ user, created, displayDate, displayText, content }, i) => (
-          <div key={`comment-${i}`}>
-            <Comment
-              img={user.avatar}
-              title={user.name}
-              subtitle={displayText || created}
-              subtitleHover={displayDate}
-            />
+      .map(({ user, created, displayDate, displayText, content }, i) => (
+        <div
+          key={`comment-${i}`}
+          className={
+            [
+              'commentcard__comment',
+              resolved && 'commentcard__comment--resolved'
+            ].filter(i => i).join(' ')
+          }
+        >
+          <Comment
+            img={user.avatar}
+            title={user.name}
+            subtitle={displayText || created}
+            subtitleHover={displayDate}
+          />
 
-            {[]
-             .concat(content)
-             .map((c, i) => (
-               <p key={i} className='t t__sm'>
-                 {c}
-               </p>
-             ))}
+          {[]
+           .concat(content)
+           .map((c, i) => (
+             <p key={i} className='t t__sm'>
+               {c}
+             </p>
+           ))}
 
-            {i !== comments.length - 1 && <hr />}
-          </div>
-        ))
-    }
+          {i !== comments.length - 1 && <hr />}
+        </div>
+      ))
+
+const WithComments = ({ comments, onSubmit, onResolve }) => (
+  <>
+    <a
+      className='commentcard__resolve'
+      onClick={onResolve}
+    >
+      <CheckCircle />
+      Resolve
+    </a>
+
+    <Comments comments={comments} />
 
     <ChatForm
       submit='Post'
@@ -94,18 +109,55 @@ const WithComments = ({ comments, onSubmit }) => (
   </>
 )
 
+const Resolved = ({ comments, resolver, onUnresolve, onSubmit }) => (
+  <>
+    <span className='commentcard__resolve'>
+      <Lock />
+      Resolved
+    </span>
+
+    <Comments
+      comments={comments}
+      resolved
+    />
+
+    {resolver && (
+      <div className='commentcard__resolved' >
+        <span title={resolver.atDate} >
+          Resolved {resolver.atText.toLowerCase()} by <b>{resolver.name}</b>
+        </span>
+      </div>
+    )}
+
+    <Button
+      size='md'
+      onClick={onUnresolve}
+    >
+      Unresolve this thread
+    </Button>
+  </>
+)
+
 export default ({
+  resolver,
+  resolved = false,
   comments = [],
-  onSubmit = _ => _
+  onSubmit = _ => _,
+  onResolve = _ => _,
+  onUnresolve = _ => _,
+  onDelete = _ => _,
 }) => {
-  const state = comments.length === 0
-        ? states.COMMENT
-        : states.THREAD
+  const cn = resolved
+        ? 'commentcard commentcard--resolved'
+        : 'commentcard'
 
   return (
-    <Card className='commentcard'>
-      {state === states.THREAD && <WithComments onSubmit={onSubmit} comments={comments} />}
-      {state === states.COMMENT && <NoComments onSubmit={onSubmit} />}
+    <Card className={cn}>
+      {sw({
+        [comments.length === 0]: () => <NoComments onSubmit={onSubmit} />,
+        [comments.length > 0]: () => <WithComments onResolve={onResolve} onDelete={onDelete} onSubmit={onSubmit} comments={comments} />,
+        [!!resolved]: () => <Resolved onUnresolve={onUnresolve} onDelete={onDelete} comments={comments} resolver={resolver} />,
+      })(true)}
     </Card>
   )
 }

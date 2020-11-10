@@ -1,4 +1,21 @@
-.commentable .commentcard form input
+.commentable .commentcard {
+  position: relative;
+  min-width: 320px;
+}
+
+.commentable .commentcard__resolved {
+  font-size: var(--t-sm);
+  color: var(--grey);
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.commentable .commentcard__comment--resolved {
+  opacity: 0.5;
+}
+
+.commentable .commentcard__comment + input,
+.commentable .commentcard__comment + form
 {
   margin-top: 20px;
 }
@@ -11,4 +28,17 @@
 .commentable .commentcard form button
 {
   margin-top: 8px;
+}
+
+.commentable .commentcard__resolve {
+  color: var(--primary);
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  text-decoration: none;
+}
+
+.commentable .commentcard__resolve svg {
+  margin-bottom: -2px;
+  margin-right: 6px;
 }

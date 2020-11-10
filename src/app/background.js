@@ -114,6 +114,68 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     break
   }
 
+  case 'RESOLVE_THREAD': {
+    const { id, ctx } = message
+    log(`RESOLVE_THREAD // Resolving thread ${id} on page ${ctx.pageId}`)
+
+    const page = (UserState.pages || [])
+          .find((page) => page.id === ctx.pageId)
+
+    if (!page) log('RESOLVE_THREAD // Page not found')
+    if (!page) return sendResponse({})
+
+    const newPage = {
+      threads: {
+        [id]: {
+          updated: new Date().toISOString(),
+          resolved: true,
+          resolvedBy: ctx.userId,
+          resolvedAt: new Date().toISOString()
+        }
+      }
+    }
+
+    log('RESOLVE_THREAD // New thread data', newPage)
+
+    firebase
+      .firestore()
+      .collection(`/teams/${ctx.teamId}/pages/`)
+      .doc(ctx.pageId)
+      .set({ ...newPage, updated: new Date().toISOString() }, { merge: true })
+    break
+  }
+
+  case 'UNRESOLVE_THREAD': {
+    const { id, ctx } = message
+    log(`UNRESOLVE_THREAD // Unresolving thread ${id} on page ${ctx.pageId}`)
+
+      const page = (UserState.pages || [])
+            .find((page) => page.id === ctx.pageId)
+
+      if (!page) log('UNRESOLVE_THREAD // Page not found')
+      if (!page) return sendResponse({})
+
+      const newPage = {
+        threads: {
+          [id]: {
+            updated: new Date().toISOString(),
+            resolved: firebase.firestore.FieldValue.delete(),
+            resolvedBy: firebase.firestore.FieldValue.delete(),
+            resolvedAt: firebase.firestore.FieldValue.delete()
+          }
+        }
+      }
+
+      log('UNRESOLVE_THREAD // New thread data', newPage)
+
+      firebase
+        .firestore()
+        .collection(`/teams/${ctx.teamId}/pages/`)
+        .doc(ctx.pageId)
+        .set({ ...newPage, updated: new Date().toISOString() }, { merge: true })
+      break
+    }
+
   case 'CREATE_PAGE': {
     const { ctx, href } = message
     log(`CREATE_PAGE // Creating page ${href} for ${ctx.teamId}`)
@@ -183,8 +245,8 @@ let listeners = []
 
 const publishPageUpdate = (page) => {
   chrome.tabs.query({ url: page.href }, tabs => {
-    log(`PAGE_CHANGE // Publishing change to ${tabs.length} tabs`)
-    log('PAGE_CHANGE // ', page)
+    log(`PAGE_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log('PAGE_PUBLISH // ', page)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_PAGE',
@@ -193,10 +255,10 @@ const publishPageUpdate = (page) => {
   })
 }
 
-const publishAuthUpdate = (user, type = `CHANGE`) => {
+const publishAuthUpdate = (user) => {
   chrome.tabs.query({}, tabs => {
-    log(`AUTH_${type} // Publishing change to ${tabs.length} tabs`)
-    log(`AUTH_${type} // `, user)
+    log(`AUTH_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log(`AUTH_PUBLISH // `, user)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_USER',
@@ -207,8 +269,8 @@ const publishAuthUpdate = (user, type = `CHANGE`) => {
 
 const publishTeamUpdate = (href, team, users) => {
   chrome.tabs.query({ url: href }, tabs => {
-    log(`TEAM_CHANGE // Publishing change to ${tabs.length} tabs`)
-    log('TEAM_CHANGE // ', team, users)
+    log(`TEAM_PUBLISH // Publishing change to ${tabs.length} tabs`)
+    log('TEAM_PUBLISH //', team, users)
 
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
       type: 'PUB_TEAM',
@@ -262,12 +324,12 @@ const initialiseListeners = (user) => {
     db
       .collection(`/teams/${teamId}/pages`)
       .onSnapshot(pagesSnapshot => {
-        log('PAGES_SNAPSHOT // Page snapshot updated')
+        log('PAGES_CHANGE // Page snapshot updated')
         const pages = readSnapshot(pagesSnapshot)
         UserState = { ...UserState, pages }
 
         pages.forEach(publishPageUpdate)
-      }, err => console.error('PAGES_SNAPSHOT // Subscription failed', err))
+      }, err => console.error('PAGES_CHANGE // Subscription failed', err))
   )
 
   log(`LISTEN // listening to /teams/${teamId}`)
@@ -276,14 +338,14 @@ const initialiseListeners = (user) => {
       .collection('/teams')
       .doc(teamId)
       .onSnapshot(async teamSnapshot => {
-        log(`TEAM_SNAPSHOT // ${teamId} // Teams updated`)
+        log(`TEAM_CHANGE // ${teamId} // Teams updated`)
         const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
 
         // if user permission within a team has changed then refresh data
         if (
           ((UserState.team || {}).members || {})[user.uid] !== team.members[user.uid]
         ) {
-          log('TEAM_SNAPSHOT // Your team permissions have changed, refreshing listeners')
+          log('TEAM_CHANGE // Your team permissions have changed, refreshing listeners')
 
           // Publish empty page data
           publishAuthUpdate(user, 'UPDATE')
@@ -310,7 +372,7 @@ const initialiseListeners = (user) => {
           team,
           memberProfiles.reduce((acc, it) => ({ ...acc, [it.id]: it }), {})
         ))
-      }, err => console.error('TEAM_SNAPSHOT // Subscription failed', err))
+      }, err => console.error('TEAM_CHANGE // Subscription failed', err))
   )
 }
 

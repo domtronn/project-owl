@@ -17,7 +17,7 @@ export const Bubble = ({
     <>
       <AnimatePresence>
         {isOpen && (
-          <div style={{ position: 'absolute', top: y, left: x }}>
+          <div style={{ position: 'absolute', top: y, left: x, zIndex: 200 }}>
             {children}
           </div>
         )}
@@ -41,7 +41,7 @@ export const Bubble = ({
 
         onClick={() => onClick()}
 
-        style={{ top: y, left: x }}
+        style={{ top: y, left: x, zIndex: isOpen ? 200 : 100 }}
         className='bubble'
       />
     </>

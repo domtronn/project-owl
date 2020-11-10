@@ -17,7 +17,6 @@ import CommentCard from '../common/components/comment-card'
 import sw from './utils/switch'
 import date from './utils/date'
 
-
 const normalise = (x, viewport) => {
   const diff = viewport - window.outerWidth
   return x - (diff / 2)
@@ -61,9 +60,16 @@ const ContentV2 = () => {
   useEffect(() => {
     onMessage
       .addListener(({ type, ...data }) => sw({
-        PUB_USER: ({ user }) => setMe(user || {}),
-        PUB_PAGE: ({ page }) => setPage(page || {}),
+        PUB_USER: ({ user }) => {
+          console.log('setUser', new Date())
+          setMe(user || {})
+        },
+        PUB_PAGE: ({ page }) => {
+          console.log('setPage', new Date())
+          setPage(page || {})
+        },
         PUB_TEAM: ({ users, team }) => {
+          console.log('setTeam', new Date())
           setTeam(team || {})
           setUsers(users || {})
         }
@@ -201,6 +207,25 @@ const ContentV2 = () => {
                 key={id || `unknown--${i}`}
               >
                 <CommentCard
+                  resolved={threadData.resolved}
+                  resolver={
+                    users[threadData.resolvedBy]
+                      ? {
+                        ...users[threadData.resolvedBy],
+                        atText: date(threadData.resolvedAt).calendar(),
+                        atDate: date(threadData.resolvedAt).format('ddd h:mm A, D MMM'),
+                      }
+                      : null
+                  }
+
+                  onUnresolve={_ => {
+                    sendMessage({ type: 'UNRESOLVE_THREAD', ctx: baseCtx, id })
+                  }}
+
+                  onResolve={_ => {
+                    sendMessage({ type: 'RESOLVE_THREAD', ctx: baseCtx, id })
+                  }}
+
                   onSubmit={content => {
                     const type = threadData.created
                           ? 'ADD_COMMENT'
