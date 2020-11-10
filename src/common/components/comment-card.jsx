@@ -8,6 +8,15 @@ import { Comment } from './comment.jsx'
 import sw from '../../app/utils/switch'
 import AnimWrapper from '../helpers/anim-wrapper'
 
+import { UsersContext } from '../../common/providers/users-provider'
+
+import { EditorState } from 'draft-js'
+import Editor from 'draft-js-plugins-editor'
+import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin'
+
+import '../../common/mentions.css'
+import '../../common/components/input.css'
+
 import {
   FiCheckCircle as CheckCircle,
   FiLock as Lock,
@@ -19,7 +28,7 @@ import {
 
 import './comment-card.css'
 
-const { useState } = React
+const { useState, useContext, useRef } = React
 
 const IconLink = ({ Icon = _ => null, onClick, children }) => (
   <li>
@@ -27,7 +36,7 @@ const IconLink = ({ Icon = _ => null, onClick, children }) => (
       onClick={onClick}
       className='l l--secondary'
     >
-  <Icon style={{ marginBottom: -2, marginRight: 6 }} />
+      <Icon style={{ marginBottom: -2, marginRight: 6 }} />
       {children}
     </a>
   </li>
@@ -38,7 +47,22 @@ const ChatForm = ({
   placeholder,
   submit
 }) => {
+  const users = Object.values(useContext(UsersContext))
   const [comment, setComment] = useState('')
+
+  const editorRef = useRef(null)
+  const [editorState, setEditorState] = useState(() =>
+    EditorState.createEmpty()
+  )
+
+  const [mentionPlugin] = useState(createMentionPlugin({
+    mentions: users,
+    entityMutability: 'IMMUTABLE',
+    mentionPrefix: '@',
+    supportWhitespace: true
+  }))
+  const [mentions, setMentions] = useState(users)
+  const { MentionSuggestions } = mentionPlugin
 
   return (
     <form
@@ -57,6 +81,22 @@ const ChatForm = ({
         onChange={e => setComment(e.target.value)}
       />
 
+      <Editor
+        ref={editorRef}
+        editorState={editorState}
+        onChange={setEditorState}
+        plugins={[mentionPlugin]}
+      />
+      <MentionSuggestions
+        suggestions={mentions}
+        onSearchChange={({ value }) => setMentions(
+          defaultSuggestionsFilter(
+            value,
+            users
+          )
+        )}
+      />
+
       <AnimWrapper
         condition={comment.length > 0}
       >
@@ -73,6 +113,7 @@ const ChatForm = ({
 
 const NoComments = ({ onSubmit }) => (
   <ChatForm
+
     submit='Post'
     onSubmit={onSubmit}
     placeholder='Write a comment'

@@ -1,6 +1,8 @@
-.commentable input {
+.commentable input,
+.commentable .editor
+{
   display: block;
-  height: 48px;
+  min-height: 48px;
   border-radius: 4px;
 
   width: calc(100% - 32px);
@@ -12,10 +14,14 @@
   outline: none;
 }
 
+.commentable .editor { padding: 16px; }
+
 .commentable input::placeholder {
   color: var(--grey);
 }
 
-.commentable input:focus {
+.commentable input:focus,
+.commentable .editor--focus
+{
   border: 1px solid var(--primary);
 }

@@ -8,9 +8,10 @@ export const Comment = ({
   img = FALLBACK_IMG,
   title,
   subtitle,
-  subtitleHover
+  subtitleHover,
+  ...rest
 }) => (
-  <div className='comment'>
+  <div {...rest} className='comment'>
     <img
       className='comment__img'
       src={img}
@@ -23,7 +24,7 @@ export const Comment = ({
     />
     <div className='comment__content'>
       <p>{title}</p>
-      <p><span title={subtitleHover || subtitle}>{subtitle}</span></p>
+      {subtitle && <p><span title={subtitleHover || subtitle}>{subtitle}</span></p>}
     </div>
   </div>
 )
