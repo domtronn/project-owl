@@ -25,11 +25,13 @@ const focusTab = (url, onFocus, onMiss) =>
       })
 
 export default ({ user }) => {
-  const [ mentions, setMentions ] = useState([])
+  const [mentions, setMentions] = useState([])
+  const [pages, setPages] = useState([])
 
-  useEffect(() => (
+  useEffect(() => {
     chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, setMentions)
-  ), [])
+    chrome.runtime.sendMessage({ type: 'GET_PAGES' }, setPages)
+  }, [])
 
   if (!mentions.length) return null
 
@@ -38,8 +40,8 @@ export default ({ user }) => {
       <h6>Quick links</h6>
       <ul>
         {
-          mentions
-            .map(({ href }, key) => (
+          pages
+            .map((href, key) => (
               <li
                 key={key}
               >
@@ -71,10 +73,10 @@ export default ({ user }) => {
                   size='sm'
                   img={mention.user.avatar}
                   title={() => <p><b>{mention.user.name}</b> mentioned you</p>}
-                  subtitle={date(created).calendar() + ' · ' + (
-                    href.length > 25
-                      ? href.slice(0, 12) + '...'
-                      : href
+                  subtitle={() => (
+                    <p>
+                      <span>{date(created).calendar()}</span>
+                    </p>
                   )}
                 />
 

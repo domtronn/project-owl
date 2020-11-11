@@ -115,8 +115,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return sendResponse(UserState.team)
   }
 
+  case 'GET_PAGES': {
+    sLog('GET_PAGES // Fetching a list of pages active for a team')
+    const pages = UserState.pages || []
+
+    sendResponse(pages.map(({ href }) => href))
+    break
+  }
+
   case 'GET_MENTIONS': {
-    //  TODO: Filter out resolved threads from mentions
     sLog('GET_MENTIONS // Fetching mentions of current user')
     const pages = UserState.pages
     const uid = UserState.user.uid
@@ -276,10 +283,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   case 'CREATE_PAGE': {
     const { ctx, href } = message
-    sLog(`CREATE_PAGE // Creating page ${href} for ${ctx.teamId}`)
+    const { origin, pathname } = new URL(href)
+    const url = origin + pathname
+
+    sLog(`CREATE_PAGE // Creating page ${url} for ${ctx.teamId}`)
 
     const newPage = {
-      href,
+      href: url,
       created: new Date().toISOString(),
       threads: { }
     }
@@ -392,7 +402,7 @@ setInterval(() => {
 let listeners = []
 
 const publishPageUpdate = (page) => {
-  chrome.tabs.query({ url: page.href }, tabs => {
+  chrome.tabs.query({ url: page.href + '*' }, tabs => {
     sLog(`PAGE_PUBLISH // Publishing change to ${tabs.length} tabs`)
     log(page)
 
@@ -416,7 +426,7 @@ const publishAuthUpdate = (user) => {
 }
 
 const publishTeamUpdate = (href, team, users) => {
-  chrome.tabs.query({ url: href }, tabs => {
+  chrome.tabs.query({ url: href + '*'}, tabs => {
     sLog(`TEAM_PUBLISH // Publishing change to ${tabs.length} tabs`)
     log(team, users)
 
@@ -550,7 +560,10 @@ window.onload = () => {
     if (status !== 'complete') return
 
     chrome.tabs.get(tab, tab => {
-      const page = (UserState.pages || []).find(page => page.href === tab.url)
+      const { origin, pathname } = new URL(tab.url)
+      const href = origin + pathname
+
+      const page = (UserState.pages || []).find(page => page.href === href)
 
       sLog('TAB_CHANGE // Tab updated, publishing events')
       UserState.user && publishAuthUpdate(UserState.user, 'UPDATE')

@@ -21,7 +21,10 @@ export const Comment = ({
           ? title()
           : <p>{title}</p>
       }
-      {subtitle && <p><span title={subtitleHover || subtitle}>{subtitle}</span></p>}
+      {subtitle && typeof subtitle === 'function' && subtitle()}
+      {subtitle && typeof subtitle !== 'function' && (
+        <p><span title={subtitleHover || subtitle}>{subtitle}</span></p>
+      )}
     </div>
   </div>
 )
