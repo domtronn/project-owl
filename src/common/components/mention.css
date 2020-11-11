@@ -6,14 +6,30 @@
 }
 
 .commentable .mention {
-  padding: 8px;
-  margin: 8px 0;
+  width: 100%;
+  padding: 12px 8px;
   display: flex;
   align-items: center;
 }
 
+.commentable .mention:last-child {
+  margin-bottom: 0;
+}
 
 .commentable .mention--focused {
   background-color: var(--light);
   border-radius: 4px;
+}
+
+.commentable .mention__emoji.mention--focused {
+  color: var(--primary);
+}
+
+
+.commentable .mention__emoji {
+  padding: 8px 16px 8px 8px;
+}
+
+.commentable .mention__emoji span {
+  margin-left: 8px;
 }

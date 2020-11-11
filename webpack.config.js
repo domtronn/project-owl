@@ -1,5 +1,7 @@
 const path = require('path')
 
+const BuildNotifierPlugin = require('webpack-build-notifier')
+
 module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
@@ -19,10 +21,16 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
 
+  plugins: [
+    new BuildNotifierPlugin({
+      title: 'Commentable built'
+    })
+  ],
+
   module: {
     rules: [
       { test: /\.tsx?$/, loader: 'ts-loader' },
-      { test: /\.jsx?/, loader: 'babel-loader', options: { presets: ['@babel/preset-react'] } },
+      { test: /\.jsx?$/, loader: 'babel-loader', options: { presets: ['@babel/preset-react'] } },
       { test: /\.css$/, use: ['style-loader', 'css-loader'] }
     ]
   },

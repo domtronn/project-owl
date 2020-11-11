@@ -12,7 +12,10 @@ import { UsersContext } from '../../common/providers/users-provider'
 
 import { EditorState, convertToRaw } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
+
 import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin'
+import createEmojiPlugin from 'draft-js-emoji-plugin'
+import createLinkifyPlugin from 'draft-js-linkify-plugin'
 
 import '../../common/components/input.css'
 
@@ -44,8 +47,9 @@ const IconLink = ({ Icon = _ => null, onClick, children }) => (
 const serialiseChat = (entityMap, comment) => (
   Object
     .values(entityMap)
-    .reduce((acc, { data }) =>
-      acc.replace(`@${data.mention.name}`, `[[:mention:][${data.mention.id}]]`),
+    .reduce((acc, { data, type }) => type === 'mention'
+            ? acc.replace(`@${data.mention.name}`, `[[:mention:][${data.mention.id}]]`)
+            : acc,
       comment
     )
 )
@@ -63,7 +67,12 @@ const ChatForm = ({
     EditorState.createEmpty()
   )
 
+  /**
+   * Mentions plugin
+   * Handles @-ing users
+   */
   const [mentionPlugin] = useState(createMentionPlugin({
+    theme: { mentionSuggestions: 'card card--popover card--narrow card--fixed' },
     mentions: users,
     entityMutability: 'IMMUTABLE',
     mentionPrefix: '@',
@@ -77,6 +86,21 @@ const ChatForm = ({
   const [mentions, setMentions] = useState(users)
   const { MentionSuggestions } = mentionPlugin
 
+  /**
+   * Emoji plugin
+   * Handles inserting emojis into the text with : character trigger
+   */
+  const [emojiPlugin] = useState(createEmojiPlugin({
+    useNativeArt: true,
+    theme: {
+      emojiSuggestionsEntryText: 't t__sm t--grey',
+      emojiSuggestionsEntryFocused: 'mention mention__emoji mention--focused',
+      emojiSuggestionsEntry: 'mention mention__emoji',
+      emojiSuggestions: 'card card--popover card--narrow'
+    },
+  }))
+  const { EmojiSuggestions } = emojiPlugin
+
   useEffect(() => {
     if (!editorRef) return
     setTimeout(editorRef.current.focus, 5)
@@ -88,7 +112,6 @@ const ChatForm = ({
     currentContent.getPlainText()
   )
 
-  // TODO: Add emoji plugin because why not?
   // TODO: Add linkify plugin
   return (
     <form
@@ -107,11 +130,16 @@ const ChatForm = ({
           placeholder={placeholder.replace(/\.\.\.$/, '') + '...'}
           editorState={editorState}
           onChange={setEditorState}
-          plugins={[mentionPlugin]}
+          plugins={[
+            mentionPlugin,
+            emojiPlugin
+          ]}
           onFocus={_ => setEditorFocus(true)}
           onBlur={_ => setEditorFocus(true)}
         />
       </div>
+
+      {/** Plugin components */}
       <MentionSuggestions
         suggestions={mentions}
         entryComponent={Mention}
@@ -126,6 +154,9 @@ const ChatForm = ({
           )
         }}
       />
+
+      <EmojiSuggestions />
+
       <AnimWrapper
         condition={comment.length > 0}
       >
