@@ -518,9 +518,13 @@ const initialiseListeners = (user) => {
             const oldPage = UserState.pages.find(({ id }) => id === newPage.id)
             const diff = addedDiff(oldPage, newPage)
 
+            if (!diff.threads) return
+
             Object
               .entries(diff.threads)
               .forEach(([threadId, { comments }]) => {
+                if (!comments) return
+
                 const mention = Object
                       .values(comments)
                       .find(({ content = '' }) => content.includes(`[[:mention:][${UserState.user.uid}]]`))
