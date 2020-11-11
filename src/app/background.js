@@ -3,6 +3,8 @@ import { firebase } from '../common/firebase'
 import 'firebase/auth'
 import 'firebase/firestore'
 
+import { addedDiff } from 'deep-object-diff'
+
 import googleAuthUser from './bg-handlers/google-auth-user'
 import sw from './utils/switch'
 
@@ -441,6 +443,16 @@ const publishTeamUpdate = (href, team, users) => {
 
 const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
+const focusTab = (url, onFocus, onMiss) =>
+      chrome.tabs.query(({ url, currentWindow: true }), (tabs) => {
+        const activeTab = tabs[0]
+
+        if (!activeTab) return onMiss()
+
+        chrome.tabs.update(activeTab.id, { active: true })
+        onFocus(activeTab.id)
+      })
+
 const initialiseListeners = (user) => {
   const db = firebase.firestore()
   sLog(`LISTEN // Currently there are ${listeners.length} listeners`)
@@ -486,6 +498,85 @@ const initialiseListeners = (user) => {
       .collection(`/teams/${teamId}/pages`)
       .onSnapshot((pagesSnapshot, ...rest) => {
         BillingState.read(pagesSnapshot.docChanges().length)
+
+        pagesSnapshot
+          .docChanges()
+          .forEach(({ doc, type }) => {
+            if (type !== 'modified') return
+
+            sLog('PAGES_CHANGE // Searching for user mentions')
+
+            const newPage = doc.data()
+            const oldPage = UserState.pages.find(({ id }) => id === newPage.id)
+            const diff = addedDiff(oldPage, newPage)
+
+            Object
+              .entries(diff.threads)
+              .forEach(([threadId, { comments }]) => {
+                const mention = Object
+                      .values(comments)
+                      .find(({ content = '' }) => content.includes(`[[:mention:][${UserState.user.uid}]]`))
+
+                if (!mention) return
+
+                sLog(`PUB_MENTION // Found a mention for ${UserState.user.uid}`)
+                log(mention)
+
+                const mentioner = ((UserState.users || {})[mention.user] || {})
+                const mentionerAvatar = mentioner.avatar || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
+
+                chrome
+                  .notifications
+                  .create({
+                    type: 'basic',
+                    title: `${mentioner.name} mentioned you!`,
+                    iconUrl: mentionerAvatar,
+                    message: `"${mention.content.replace(`[[:mention:][${UserState.user.uid}]]`, `@${UserState.userProfile.name}`)}"`
+                  }, (notificationId) => {
+                    function onNotificationClicked (nId, btnId) {
+                      if (nId === notificationId) {
+                        focusTab(
+                          newPage.href,
+                          tabId => chrome.tabs.sendMessage(tabId, { type: 'OPEN_THREAD', id: threadId }),
+                          _ => {
+                            // FIXME: This is duplicate with the NEW_OPEN_PAGE event since background won't respond to its own messages
+                            //  Should consolidate this into a function
+                            chrome.tabs.create({ url: newPage.href }, tab => {
+                              log(`OPEN_THREAD // created tab ${tab.id}, waiting for complete...`)
+                              chrome.tabs.onUpdated.addListener(function waitForComplete (ltab, { status }) {
+                                log(`OPEN_THREAD // Tab ${tab.id}/${ltab} updated with status ${status}`)
+                                if (ltab !== tab.id) return
+                                if (status !== 'complete') return
+
+                                log(`OPEN_THREAD // ${tab.id} is ready...`)
+
+                                setTimeout(() => {
+                                  log(`OPEN_THREAD // Sending open message to ${tab.id} and removing listener...`)
+                                  chrome.tabs.sendMessage(tab.id, { type: 'OPEN_THREAD', id: threadId })
+                                  chrome.tabs.onUpdated.removeListener(waitForComplete)
+                                }, 500)
+                              })
+                            })
+                          }
+                        )
+                      }
+
+                      chrome.notifications.onClicked.removeListener(onNotificationClicked)
+                    }
+
+                    chrome
+                      .notifications
+                      .onClicked
+                      .removeListener(onNotificationClicked)
+
+                    chrome
+                      .notifications
+                      .onClicked
+                      .addListener(onNotificationClicked)
+                  })
+              })
+          })
+
 
         sLog('PAGES_CHANGE // Page snapshot updated')
         const pages = readSnapshot(pagesSnapshot)

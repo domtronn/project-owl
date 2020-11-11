@@ -44,6 +44,9 @@ const Popup = () => {
   useEffect(() => {
     onMessage.addListener((message) => {
       switch (message.type) {
+      case 'PUB_USER':
+        setUser(message.user)
+        break
       case 'GOOGLE_USER':
         setUser(message.user)
         setState(states.DASHBOARD)
@@ -65,7 +68,9 @@ const Popup = () => {
     user.emailVerified
       ? setState(states.DASHBOARD)
       : setState(states.VERIFY_EMAIL)
-  }, [user])
+  }, [])
+
+  console.log('user //', user)
 
   return (
     <>

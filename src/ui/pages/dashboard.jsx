@@ -29,11 +29,11 @@ export default ({ user }) => {
   const [pages, setPages] = useState([])
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, setMentions)
-    chrome.runtime.sendMessage({ type: 'GET_PAGES' }, setPages)
-  }, [])
+    chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, m => setMentions(m || []))
+    chrome.runtime.sendMessage({ type: 'GET_PAGES' }, p => setPages(p || []))
+  }, [mentions.length, pages.length])
 
-  if (!mentions.length) return null
+  if (!mentions || !mentions.length) return null
 
   return (
     <>

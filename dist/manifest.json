@@ -21,6 +21,7 @@
   },
   "permissions": [
     "identity",
+    "notifications",
     "https://*/*"
   ],
   "oauth2": {
@@ -42,4 +43,3 @@
     }
   ]
 }
-  
