@@ -52,7 +52,8 @@
   margin: 0;
   color: var(--black);
 }
-.commentable .t__xs { font-size: var(--t-sm); }
+.commentable .t__xs,
+.commentable .t__xs .l { font-size: var(--t-sm); }
 .commentable .t__sm { font-size: var(--t-rg); }
 .commentable .t__xs, .commentable .t__sm
 {

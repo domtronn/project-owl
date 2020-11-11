@@ -141,7 +141,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   const mention = comments // Slice reverse to create a copy before seraching to find last comment
                         .slice()
                         .reverse()
-                        .find(({ content }) => content.includes(`[[:mention:][${uid}]]`))
+                        .find(({ content = '' }) => content.includes(`[[:mention:][${uid}]]`))
+
                   if (!mention) return acc // Filter out threads without a mention
 
                   return acc.concat({ ...mention, threadId: id, href, user: UserState.users[mention.user] })

@@ -47,25 +47,44 @@ const Link = ({ children }) => (
   </Linkify>
 )
 
-export const ParseComment = ({ content: c, highlight = 't--primary', users, ...rest }) => {
-  const split = (c || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
+export const ParseComment = ({
+  content,
+  title,
+  highlight = 't--primary',
+  users,
+  ...rest
+}) => {
+  const split = (content || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
 
-  if (split.length === 1) return <p {...rest}><Link>{split[0]}</Link></p>
+  const TitleWrapper = title
+        ? ({ children }) => <span title={title}>{children}</span>
+        : React.Fragment
+
+  if (split.length === 1) {
+    return (
+      <TitleWrapper>
+        <p title={title} {...rest}><Link>{split[0]}</Link></p>
+      </TitleWrapper>
+    )
+  }
+
   return (
-    <p>
-      {
-        split.map((c, j) => {
-          const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
+    <TitleWrapper >
+      <p title={title} {...rest}>
+        {
+          split.map((c, j) => {
+            const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
 
-          if (!c.length) return null
-          if (!user) return <Link>{c}</Link>
-          return (
-            <span data-uid={user} key={j} className={`t ${highlight}`}>
-              <span className={`t t--bold ${highlight}-faded`}>@</span>{(users[user] || {}).name || 'Anonymous'}
-            </span>
-          )
-        })
-      }
-    </p>
+            if (!c.length) return null
+            if (!user) return <Link>{c}</Link>
+            return (
+              <span data-uid={user} key={j} className={`t ${highlight}`}>
+                <span className={`t t--bold ${highlight}-faded`}>@</span>{(users[user] || {}).name || 'Anonymous'}
+              </span>
+            )
+          })
+        }
+      </p>
+    </TitleWrapper>
   )
 }

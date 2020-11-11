@@ -85,6 +85,7 @@ export default ({ user }) => {
                   highlight='t--grey'
                   users={{ [user.uid]: user }}
                   content={content}
+                  title={content}
                 />
 
                 <Button
