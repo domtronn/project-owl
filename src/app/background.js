@@ -126,6 +126,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   case 'GET_MENTIONS': {
+    // TODO: Filter out mentions if you've responded after the mention
+
     sLog('GET_MENTIONS // Fetching mentions of current user')
     const pages = UserState.pages
     const uid = UserState.user.uid
@@ -145,7 +147,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         .reverse()
                         .find(({ content = '' }) => content.includes(`[[:mention:][${uid}]]`))
 
+                  const lastResponse = comments
+                        .slice()
+                        .reverse()
+                        .find(({ user }) => user === UserState.user.uid)
+
                   if (!mention) return acc // Filter out threads without a mention
+                  if (lastResponse && new Date(lastResponse.created) > new Date(mention.created)) return acc // Filter out mentions if you've responded since the mention
 
                   return acc.concat({ ...mention, threadId: id, href, user: UserState.users[mention.user] })
                 }, [])
