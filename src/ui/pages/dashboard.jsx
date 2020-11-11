@@ -43,21 +43,28 @@ export default ({ user }) => {
           pages
             .map((href, key) => (
               <li
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
                 key={key}
               >
-                <a
-                  key={key}
-                  onClick={_ => {
-                    focusTab(
-                      href,
-                      _ => _,
-                      _ => chrome.tabs.create({ url: href })
-                    )
-                  }}
-                >
-                  <Link />
-                  {href}
-                </a>
+                <span title={href}>
+                  <a
+                    key={key}
+                    onClick={_ => {
+                      focusTab(
+                        href,
+                        _ => _,
+                        _ => chrome.tabs.create({ url: href })
+                      )
+                    }}
+                  >
+                    <Link />
+                    {href}
+                  </a>
+                </span>
               </li>
             ))
         }

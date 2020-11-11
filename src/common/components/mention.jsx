@@ -55,28 +55,35 @@ export const ParseComment = ({
   ...rest
 }) => {
   const split = (content || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
-
+  
   const TitleWrapper = title
-        ? ({ children }) => <span title={title}>{children}</span>
+        ? ({ titleF, children }) => <span title={titleF()}>{children}</span>
         : React.Fragment
 
   if (split.length === 1) {
     return (
-      <TitleWrapper>
-        <p title={title} {...rest}><Link>{split[0]}</Link></p>
+      <TitleWrapper titleF={_ => title}>
+        <p {...rest}><Link>{split[0]}</Link></p>
       </TitleWrapper>
     )
   }
 
   return (
-    <TitleWrapper >
-      <p title={title} {...rest}>
+    <TitleWrapper
+      titleF={_ => split.reduce((acc, it) => {
+        const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(it) || []
+        return user
+          ? acc + '@' + ((users[user] || {}).name || 'Anonymous')
+          : acc + it
+      }, '')}
+    >
+      <p {...rest}>
         {
           split.map((c, j) => {
             const [, user] = /^\[\[:mention:\]\[(.*?)\]\]$/.exec(c) || []
 
             if (!c.length) return null
-            if (!user) return <Link>{c}</Link>
+            if (!user) return <Link key={j}>{c}</Link>
             return (
               <span data-uid={user} key={j} className={`t ${highlight}`}>
                 <span className={`t t--bold ${highlight}-faded`}>@</span>{(users[user] || {}).name || 'Anonymous'}
