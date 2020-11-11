@@ -78,15 +78,44 @@ button {
 body {
   border-radius: 8px;
   min-width: 328px;
+  max-width: 328px;
   text-align: center;
   padding: 16px;
 }
 
 /* Spacing */
 h5 { margin: 32px 0 8px; }
+h6 { margin: 24px 0 4px; }
+
 input, button { margin-bottom: 8px; }
 .commentable p + form,
 .commentable a + button,
 .commentable a + p,
 .commentable button + p { margin-top: 32px; }
 a { margin: 0 8px; }
+
+.commentable ul {
+  margin: 6px 0;
+  padding: 0;
+}
+
+.commentable li {
+  margin: 0;
+  padding: 8px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--light-darken);
+}
+
+.commentable li a {
+  margin: 0;
+  line-height: 20px;
+}
+
+.commentable a svg {
+  margin-bottom: -1px;
+  margin-right: 6px;
+}
+
+.commentable li:last-child {
+  border-bottom: 0;
+}

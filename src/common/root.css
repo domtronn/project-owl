@@ -89,6 +89,12 @@
   text-decoration: none;
 }
 
+.commentable .t__snippet {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .commentable a *,
 .commentable .l * {
   text-decoration: none;

@@ -8,29 +8,54 @@ import sw from './utils/switch'
 
 let UserState = {}
 
+const BillingState = {
+  log: (msg) => sLog(`BILLING // ${msg} -- READS:${BillingState.reads} WRITES:${BillingState.writes} DELETES:${BillingState.deletes}`),
+  read: (amt = 1) => {
+    BillingState.reads += amt
+    BillingState.log(`read ${amt}`)
+  },
+  write: (amt = 1) => {
+    BillingState.writes += amt
+    BillingState.log(`write ${amt}`)
+  },
+  delete: (amt = 1) => {
+    BillingState.deletes += amt
+    BillingState.log(`delete ${amt}`)
+  },
+  reads: 0,
+  writes: 0,
+  deletes: 0
+}
+
 const log = (...msg) => console.log(...msg)
-const logGreen = (...msg) => console.log(...msg, 'padding: 2px; background-color: #00f5d4; color: #000', '')
-const logRed = (...msg) => console.log(...msg, 'padding: 2px; background-color: #ef476f; color: #fff', '')
-const logBlue = (...msg) => console.log(...msg, 'padding: 2px; background-color: #00bbf9; color: #000', '')
-const logYellow = (...msg) => console.log(...msg, 'padding: 2px; background-color: #fee440; color: #000', '')
-const logMagenta = (...msg) => console.log(...msg, 'padding: 2px; background-color: #9b5de5; color: #fff', '')
-const logBoW = (...msg) => console.log(...msg, 'padding: 2px; background-color: #fff; color: #000', '')
+const logGreen = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #f30089; color: #fff', '')
+const logRed = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #2d00f7; color: #fff', '')
+const logBlue = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #bc00dd; color: #fff', '')
+const logYellow = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #8900f2; color: #fff', '')
+const logMagenta = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #db00b6; color: #fff', '')
+const logBoW = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; background-color: #fff; color: #000', '')
 
 /** Smart log based on the scope of the message */
 const sLog = (m, ...rest) => sw({
-  [m.startsWith('GET')]: _ => logMagenta(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('CREATE')]: _ => logGreen(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('UPDATE')]: _ => logGreen(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('DELETE')]: _ => logRed(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.includes('_CHANGE')]: _ => logYellow(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.includes('_PUBLISH')]: _ => logBlue(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('LISTEN')]: _ => logBoW(`%c${m.replace(' // ', ' //%c ')}`, ...rest),
+  // Log green for CREATE & UPDATE
+  [m.startsWith('CREATE')]: _ => logGreen(`⭐️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('UPDATE')]: _ => logGreen(`♻️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  // Log red for DELETES
+  [m.startsWith('DELETE')]: _ => logRed(`☠️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+
+  // Log magenta for INCOMING requests from snapshot changes & clients
+  [m.startsWith('GET')]: _ => logMagenta(`✉️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_CHANGE')]: _ => logMagenta(`📣 %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_PUBLISH')]: _ => logBlue(`🔊 %c${m.replace(' // ', ' //%c ')}`, ...rest),
+
+  [m.startsWith('LISTEN')]: _ => logBoW(`👂 %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('BILLING')]: _ => logYellow(`💰 %c${m.replace(' // ', ' //%c ')}`, ...rest),
   default: _ => log(m, ...rest)
 })(true)
 
 logGreen('%cCREATE%c These message are used for creations')
-logRed('%cDELETE%c These message are used for document deletions')
 logBlue('%cUPDATE%c These are used for message updates')
+logRed('%cDELETE%c These message are used for document deletions')
 log('\n')
 logYellow('%cCHANGE%c This is used for changes to a document based on an event')
 logMagenta('%cREAD%c This is used for a client request')
@@ -91,29 +116,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   case 'GET_MENTIONS': {
+    //  TODO: Filter out resolved threads from mentions
     sLog('GET_MENTIONS // Fetching mentions of current user')
     const pages = UserState.pages
     const uid = UserState.user.uid
 
     const mentions = pages
-          .map(({ href, threads }) => {
-            return [
-              href,
+          .reduce((acc, page) => {
+            const { href, threads } = page
+
+            return acc.concat(
               Object
                 .entries(threads)
-                .reduce((acc, [id, { comments }]) => {
-                  const mention = comments.find(({ content }) => content.includes(`[[:mention:][${uid}]]`))
-                  if (!mention) return acc
+                .reduce((acc, [id, { comments, resolved }]) => {
+                  if (resolved) return acc // Filter out resolved threads
 
-                  return acc.concat([[id, mention]])
+                  const mention = comments // Slice reverse to create a copy before seraching to find last comment
+                        .slice()
+                        .reverse()
+                        .find(({ content }) => content.includes(`[[:mention:][${uid}]]`))
+                  if (!mention) return acc // Filter out threads without a mention
+
+                  return acc.concat({ ...mention, threadId: id, href, user: UserState.users[mention.user] })
                 }, [])
-            ]
-          })
+            )
+          }, [])
+          .sort((a, b) => new Date(b.created) - new Date(b))
 
     sLog(`GET_MENTIONS // `)
     log(mentions)
 
     sendResponse(mentions)
+    break
   }
 
     // ----------------------------------------
@@ -164,11 +198,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     }
 
+    BillingState.write()
     firebase
       .firestore()
       .collection(`/teams/${ctx.teamId}/pages/`)
       .doc(ctx.pageId)
       .set({ ...newPage, updated: new Date().toISOString() }, { merge: true})
+
     break
   }
 
@@ -196,6 +232,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sLog('RESOLVE_THREAD // New thread data')
     log(newPage)
 
+    BillingState.write()
     firebase
       .firestore()
       .collection(`/teams/${ctx.teamId}/pages/`)
@@ -228,7 +265,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sLog('UNRESOLVE_THREAD // New thread data')
     log(newPage)
 
-      firebase
+    BillingState.write()
+    firebase
         .firestore()
         .collection(`/teams/${ctx.teamId}/pages/`)
         .doc(ctx.pageId)
@@ -246,6 +284,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       threads: { }
     }
 
+    BillingState.write()
     firebase
       .firestore()
       .collection(`/teams/${ctx.teamId}/pages/`)
@@ -272,6 +311,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sLog('DELETE_THREAD // New thread data')
     log(newPage)
 
+    BillingState.write()
     firebase
       .firestore()
       .collection(`/teams/${ctx.teamId}/pages/`)
@@ -284,7 +324,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   case 'NEW_OPEN_THREAD': {
     const { url, id } = message
     chrome.tabs.create({ url }, tab => {
-      setTimeout(() => chrome.tabs.sendMessage(tab.id, { type: 'OPEN_THREAD', id }), 1000)
+      log(`OPEN_THREAD // created tab ${tab.id}, waiting for complete...`)
+      chrome.tabs.onUpdated.addListener(function waitForComplete (ltab, { status }) {
+        log(`OPEN_THREAD // Tab ${tab.id}/${ltab} updated with status ${status}`)
+        if (ltab !== tab.id) return
+        if (status !== 'complete') return
+
+        log(`OPEN_THREAD // ${tab.id} is ready...`)
+
+        setTimeout(() => {
+          log(`OPEN_THREAD // Sending open message to ${tab.id} and removing listener...`)
+          chrome.tabs.sendMessage(tab.id, { type: 'OPEN_THREAD', id })
+          chrome.tabs.onUpdated.removeListener(waitForComplete)
+        }, 500)
+      })
     })
     break
   }
@@ -315,6 +368,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     }
 
+    BillingState.write()
     firebase
       .firestore()
       .collection(`/teams/${ctx.teamId}/pages/`)
@@ -332,7 +386,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 setInterval(() => {
   window.USER_STATE = UserState
-}, 2500)
+  window.BILLING_STATE = BillingState
+}, 250)
 
 let listeners = []
 
@@ -384,6 +439,8 @@ const initialiseListeners = (user) => {
       .collection('/users')
       .doc(user.uid)
       .onSnapshot(userSnapshot => {
+        BillingState.read()
+
         const user = userSnapshot.data()
 
         log('userdoc', user.team)
@@ -416,7 +473,9 @@ const initialiseListeners = (user) => {
   listeners.push(
     db
       .collection(`/teams/${teamId}/pages`)
-      .onSnapshot(pagesSnapshot => {
+      .onSnapshot((pagesSnapshot, ...rest) => {
+        BillingState.read(pagesSnapshot.docChanges().length)
+
         sLog('PAGES_CHANGE // Page snapshot updated')
         const pages = readSnapshot(pagesSnapshot)
         UserState = { ...UserState, pages }
@@ -431,6 +490,8 @@ const initialiseListeners = (user) => {
       .collection('/teams')
       .doc(teamId)
       .onSnapshot(async teamSnapshot => {
+        BillingState.read()
+
         sLog(`TEAM_CHANGE // ${teamId} // Teams updated`)
         const team = { id: teamSnapshot.id, ...teamSnapshot.data() }
 

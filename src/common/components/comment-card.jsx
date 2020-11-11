@@ -22,7 +22,7 @@ import {
   FiUnlock as Unlock,
   FiMoreVertical as More,
   FiTrash2 as Delete,
-  FiXCircle as Close,
+  FiX as Close
 } from 'react-icons/fi'
 
 import './comment-card.css'
@@ -88,6 +88,10 @@ const ChatForm = ({
     currentContent.getPlainText()
   )
 
+  // TODO: Add emoji plugin because why not?
+  // TODO: Add linkify plugin
+  // TODO: Fix the regexp trigger to include the first character
+  // TODO: Fix the search value splitting to highlight correctly with capitalisation
   return (
     <form
       onSubmit={e => {
@@ -145,8 +149,6 @@ const NoComments = ({ onSubmit }) => (
 const Comments = ({ comments, resolved }) => {
   const users = useContext(UsersContext)
 
-  console.log(users)
-
   return comments
     .map(({ user, created, displayDate, displayText, content }, i) => (
       <div
@@ -161,6 +163,7 @@ const Comments = ({ comments, resolved }) => {
         <Comment
           img={user.avatar}
           title={user.name}
+          /* TODO: The display text should include both created & updated */
           subtitle={displayText || created}
           subtitleHover={displayDate}
         />

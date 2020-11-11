@@ -69,3 +69,14 @@
 }
 
 .commentable .btn--disabled:hover { cursor: initial; }
+
+/** Styling for icons inside of buttons */
+.commentable button svg {
+  margin-bottom: -2px;
+  margin-right: 6px;
+}
+
+.commentable button.btn--sm svg {
+  margin-bottom: -2px;
+  margin-right: 4px;
+}

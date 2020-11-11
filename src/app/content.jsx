@@ -257,6 +257,7 @@ const ContentV2 = () => {
                       })
                     }}
 
+                    /* TODO: Should maintain the created at for each comment as a hover title */
                     comments={
                       (page.threads[id].comments || [])
                         .map(doc => {
