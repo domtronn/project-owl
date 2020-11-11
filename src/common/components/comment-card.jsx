@@ -12,7 +12,6 @@ import { UsersContext } from '../../common/providers/users-provider'
 
 import { EditorState, convertToRaw } from 'draft-js'
 import Editor from 'draft-js-plugins-editor'
-
 import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin'
 import createEmojiPlugin from 'draft-js-emoji-plugin'
 import createLinkifyPlugin from 'draft-js-linkify-plugin'
@@ -44,15 +43,12 @@ const IconLink = ({ Icon = _ => null, onClick, children }) => (
   </li>
 )
 
-const serialiseChat = (entityMap, comment) => (
-  Object
-    .values(entityMap)
-    .reduce((acc, { data, type }) => type === 'mention'
-            ? acc.replace(`@${data.mention.name}`, `[[:mention:][${data.mention.id}]]`)
-            : acc,
-      comment
-    )
-)
+const serialiseChat = (entityMap, comment) => Object
+      .values(entityMap)
+      .reduce((acc, { data, type }) => sw({
+        mention: _ => acc.replace(`@${data.mention.name}`, `[[:mention:][${data.mention.id}]]`),
+        default: _ => acc
+      })(type), comment)
 
 const ChatForm = ({
   onSubmit,
@@ -101,6 +97,16 @@ const ChatForm = ({
   }))
   const { EmojiSuggestions } = emojiPlugin
 
+  /**
+   * Linkify plugin
+   * Automatically creates anchor tags when someone enters a URL
+   */
+  const [linkifyPlugin] = useState(createLinkifyPlugin({
+    theme: {
+      link: 'l l--embed l--embed--light'
+    }
+  }))
+
   useEffect(() => {
     if (!editorRef) return
     setTimeout(editorRef.current.focus, 5)
@@ -131,6 +137,7 @@ const ChatForm = ({
           editorState={editorState}
           onChange={setEditorState}
           plugins={[
+            linkifyPlugin,
             mentionPlugin,
             emojiPlugin
           ]}

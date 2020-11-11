@@ -560,6 +560,8 @@ window.onload = () => {
     if (status !== 'complete') return
 
     chrome.tabs.get(tab, tab => {
+      if (!tab.url) return
+
       const { origin, pathname } = new URL(tab.url)
       const href = origin + pathname
 

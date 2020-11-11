@@ -48,6 +48,7 @@
 .commentable .t,
 .commentable p
 {
+  line-height: 20px;
   margin: 0;
   color: var(--black);
 }
@@ -75,9 +76,15 @@
 }
 
 .commentable .t--bold { font-weight: 600; }
-.commentable .t--light { color: var(--lightgrey); }
+.commentable .t--light,
+.commentable .t--grey-faded
+{
+  color: var(--lightgrey);
+}
+
 .commentable .t--grey { color: var(--grey); }
 .commentable .t--primary { color: var(--primary); }
+.commentable .t--primary-faded { color: var(--primary-faded); }
 
 /** Link text styling */
 .commentable a,
@@ -86,7 +93,9 @@
   font-size: var(--t-rg);
   line-height: 20px;
   color: var(--primary);
-  text-decoration: none;
+
+  /** Need important to get rid of plugin inline styles specificity */
+  text-decoration: none !important;
 }
 
 .commentable .t__snippet {
@@ -95,6 +104,7 @@
   white-space: nowrap;
 }
 
+.commentable a,
 .commentable a *,
 .commentable .l * {
   text-decoration: none;
@@ -109,9 +119,46 @@
   border-bottom: 1px solid var(--primary);
 }
 
-.commentable .l--primary { color: var(--primary); }
-.commentable .l--secondary:hover { color: var(--primary); border-bottom-color: var(--primary); }
-.commentable .l--secondary { color: var(--grey); }
+.commentable a,
+.commentable a:visited,
+.commentable .l--primary,
+.commentable a.l--primary:visited
+{
+  /** Need important to get rid of plugin inline styles specificity */
+  color: var(--primary) !important;
+}
+
+.commentable .l--secondary,
+.commentable a.l--secondary:visited
+{
+  /** Need important to get rid of plugin inline styles specificity */
+  color: var(--grey) !important;
+}
+.commentable a.l--secondary:hover {
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary);
+}
+
+.commentable .l.l--embed,
+.commentable .l.l--embed:visited
+{
+  padding: 1px 4px;
+  background-color: var(--light);
+  /** Need important to get rid of plugin inline styles specificity */
+  color: var(--grey) !important;
+  border-bottom: 1px solid var(--grey);
+}
+
+.commentable .l.l--embed--light {
+  padding: 0;
+},
+
+.commentable .l.l--embed:hover
+{
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary);
+}
+
 
 .commentable .l__lg { font-size: var(--t-md); line-height: 24px; }
 .commentable .l__sm { font-size: var(--t-sm); line-height: 16px; }
