@@ -8,7 +8,9 @@ export const Mention = ({
   searchValue,
   mention: { name, avatar }
 }) => {
-  const [pre, post] = name.split(searchValue)
+  const re = new RegExp(searchValue, 'i')
+  const [match] = re.exec(name) || []
+  const [pre, post] = name.split(re)
 
   return (
     <div className={isFocused ? 'mention mention--focused' : 'mention'}>
@@ -18,7 +20,7 @@ export const Mention = ({
       />
       <p>
         <span className='t t--grey'>{pre}</span>
-        <span className='t t--primary'>{searchValue}</span>
+        <span className='t t--primary'>{match}</span>
         <span className='t t--grey'>{post}</span>
       </p>
     </div>

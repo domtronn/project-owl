@@ -90,8 +90,6 @@ const ChatForm = ({
 
   // TODO: Add emoji plugin because why not?
   // TODO: Add linkify plugin
-  // TODO: Fix the regexp trigger to include the first character
-  // TODO: Fix the search value splitting to highlight correctly with capitalisation
   return (
     <form
       onSubmit={e => {
@@ -117,12 +115,16 @@ const ChatForm = ({
       <MentionSuggestions
         suggestions={mentions}
         entryComponent={Mention}
-        onSearchChange={({ value }) => setMentions(
-          defaultSuggestionsFilter(
-            value,
-            users
+        onSearchChange={({ value }) => {
+          if (!value.length) return setMentions([])
+
+          return setMentions(
+            defaultSuggestionsFilter(
+              value,
+              users
+            )
           )
-        )}
+        }}
       />
       <AnimWrapper
         condition={comment.length > 0}
@@ -163,7 +165,6 @@ const Comments = ({ comments, resolved }) => {
         <Comment
           img={user.avatar}
           title={user.name}
-          /* TODO: The display text should include both created & updated */
           subtitle={displayText || created}
           subtitleHover={displayDate}
         />
