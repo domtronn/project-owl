@@ -110,7 +110,6 @@ const Popup = () => {
       {
         user && user.emailVerified && (
           <Button
-            size='sm'
             onClick={() =>
               firebase
                 .auth()

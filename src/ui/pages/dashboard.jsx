@@ -88,7 +88,7 @@ export default ({ user }) => {
                 />
 
                 <Button
-                  style={{ marginTop: 8, marginLeft: 'auto', marginRight: 0 }}
+                  style={{ position: 'absolute', top: 8, right: 0 }}
                   onClick={_ => {
                     focusTab(
                       href,
