@@ -7,7 +7,7 @@ import 'firebase/firestore'
 
 import { Button } from '../../common/components/button'
 import { Input } from '../../common/components/input'
-import { SiGoogle as Google } from 'react-icons/si'
+import { FcGoogle as Google } from 'react-icons/fc'
 
 const ResetSent = ({
   goLogin = _ => _
@@ -191,8 +191,8 @@ export default ({
                 .sendMessage({ type: 'GOOGLE_AUTH_USER' })
             }}
           >
-            Sign in with
-            <Google style={{ marginBottom: -2, marginLeft: 6 }} />
+            <Google style={{ marginBottom: -2, marginRight: 6, marginLeft: -22 }} />
+            Sign in with Google
           </Button>
         </>
       )}

@@ -8,9 +8,32 @@ import {
   FiExternalLink as Link
 } from 'react-icons/fi'
 
+import { motion } from 'framer-motion'
+
 import { Comment } from '../../common/components/comment'
+import Skeleton from '../../common/components/skeleton'
 
 import date from '../../app/utils/date'
+
+const LinkSkel = () => Array(3).fill().map((_, i) => (
+  <li key={i} style={{ display: 'inline-flex', alignItems: 'center', width: '100%' }}>
+    <Skeleton.Avatar size='xs' style={{ margin: '0 8px 0 0' }} />
+    <Skeleton.Text width={190 + ((32 * (i + 1)) % 58)} size='sm' style={{ margin: 0 }} />
+  </li>
+))
+
+const MentionSkel = ({ i = 1 }) => Array(2).fill().map((_, i) => (
+  <>
+    <div style={{ display: 'inline-flex', alignItems: 'center', width: '100%' }}>
+      <Skeleton.Avatar size='sm' style={{ marginRight: 6 }}/>
+      <div>
+        <Skeleton.Text width={190 + ((32 * (i + 1)) % 58)} size='md' style={{ margin: '4px 0' }} />
+        <Skeleton.Text width={100 + ((32 * (i + 1)) % 58)} size='sm' style={{ margin: '4px 0' }} />
+      </div>
+    </div>
+    <Skeleton.Text width='100%' size='sm' style={{ margin: 0 }} />
+  </>
+))
 
 const { useState, useEffect } = React
 
@@ -35,20 +58,36 @@ export default ({ user = {}, team = {}, pages = [] }) => {
     chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, m => setMentions(m || []))
   }, [pages.length, user, team])
 
+  if (!user || !user.uid) return null
+
   return (
     <>
       <h6>Quick links</h6>
       <ul>
         {
-          pages
+          pages.length === 0
+            ? <LinkSkel />
+            : pages
             .map((href, key) => (
-              <li
+              <motion.li
+                initial='hidden'
+                animate='visible'
+                transition={{
+                  delay: key / 3,
+                  type: 'spring',
+                  stiffness: 600
+                }}
+                variants={{
+                  visible: { y: 0, opacity: 1 },
+                  hidden: { y: 20, opacity: 0 }
+                }}
+
+                key={key}
                 style={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap'
                 }}
-                key={key}
               >
                 <span title={href}>
                   <a
@@ -65,7 +104,7 @@ export default ({ user = {}, team = {}, pages = [] }) => {
                     {href}
                   </a>
                 </span>
-              </li>
+              </motion.li>
             ))
         }
       </ul>
@@ -73,9 +112,25 @@ export default ({ user = {}, team = {}, pages = [] }) => {
       <h6>Mentions</h6>
       <ul>
         {
-          mentions
+          mentions.length === 0
+            ? <MentionSkel />
+            : mentions
             .map(({ href, content, created, threadId, ...mention }, i) => (
-              <li key={i}>
+              <motion.li
+                initial='hidden'
+                animate='visible'
+                transition={{
+                  delay: i / 4,
+                  type: 'spring',
+                  stiffness: 600
+                }}
+                variants={{
+                  visible: { y: 0, opacity: 1 },
+                  hidden: { y: 20, opacity: 0 }
+                }}
+
+                key={i}
+              >
                 <Comment
                   size='sm'
                   img={mention.user.avatar}
@@ -108,7 +163,7 @@ export default ({ user = {}, team = {}, pages = [] }) => {
                 >
                   <Message/> Reply
                 </Button>
-              </li>
+              </motion.li>
             ))}
       </ul>
     </>

@@ -17,6 +17,7 @@ import Register from './pages/register'
 import TeamSelector from './pages/team-selector'
 import Dashboard from './pages/dashboard'
 
+import Skeleton from '../common/components/skeleton'
 import { Button } from '../common/components/button'
 
 import sw from '../app/utils/switch'
@@ -37,7 +38,20 @@ const states = {
   LOADING: 'loading',
 }
 
+const PopupSkel = () => (
+  <>
+    <div style={{ margin: '32px 0' }}>
+      <Skeleton.Avatar size='lg' style={{ margin: '24px auto' }} />
+      <Skeleton.Text style={{ margin: '16px auto' }} width={220} size='md' />
+      <Skeleton.Text style={{ margin: '16px auto' }} width={180} size='md' />
+      <Skeleton.Text style={{ margin: '16px auto' }} width={200} size='md' />
+      <Skeleton.Text style={{ margin: '16px auto' }} width={210} size='lg' />
+    </div>
+  </>
+)
+
 const Popup = () => {
+  const [loading, setLoading] = useState(true)
   const [state, setState] = useState(states.LOADING)
 
   const [user, setUser] = useState()
@@ -48,7 +62,7 @@ const Popup = () => {
     onMessage.addListener((message) => {
       switch (message.type) {
       case 'PUB_USER':
-        setUser(message.user)
+        setUser({ ...user, ...message.user })
         break
       case 'PUB_PAGES':
         setPages(message.pages)
@@ -68,17 +82,16 @@ const Popup = () => {
     sendMessage({ type: 'GET_USER' }, (payload) => {
       const { user, profile } = payload || {}
       setUser(Object.assign({}, user, profile))
+      setLoading(false)
+      setState(
+        user && user.uid
+          ? states.DASHBOARD
+          : states.LOGIN
+      )
     })
   }, [])
 
-  useEffect(() => {
-    sw({
-      [user && user.uid]: _ => setState(states.VERIFY_EMAIL),
-      [user && user.uid && user.emailVerified]: _ => setState(states.DASHBOARD),
-      [state === states.REGISTER]: _ => _,
-      default: _ => setState(states.LOGIN)
-    })(true)
-  }, [user, team, pages])
+  console.log(loading)
 
   return (
     <>
@@ -119,17 +132,29 @@ const Popup = () => {
               pages={pages}
             />
           </>
+        ),
+
+        [states.LOADING]: () => (
+          <>
+            <PopupSkel />
+          </>
         )
       })(state)}
 
       {
         state !== states.LOGIN && user && user.emailVerified && (
           <Button
-            onClick={() =>
+            onClick={() => {
+              setLoading(true)
+              setState(states.LOADING)
               firebase
                 .auth()
                 .signOut()
-                .then(() => setState(states.LOGIN))}
+                .then(() => {
+                  setLoading(false)
+                  setState(states.LOGIN)
+                })
+            }}
           >
             Sign out
           </Button>

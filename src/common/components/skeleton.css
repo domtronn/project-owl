@@ -27,6 +27,7 @@
   background-size: 320px 48px;
 }
 
+.commentable .s__avatar--xs { width: 16px; height: 16px; }
 .commentable .s__avatar--sm { width: 32px; height: 32px; }
 .commentable .s__avatar--lg { width: 64px; height: 64px; }
 
