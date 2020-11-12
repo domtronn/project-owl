@@ -8,14 +8,19 @@ import './mention.css'
 export const Mention = ({
   isFocused,
   searchValue,
-  mention: { name, avatar }
+  mention: { name, avatar },
+
+  ...rest
 }) => {
   const re = new RegExp(`(${searchValue})`, 'i')
   const [match] = re.exec(name) || []
   const [pre,, ...post] = name.split(re)
 
   return (
-    <div className={isFocused ? 'mention mention--focused' : 'mention'}>
+    <div
+      {...rest}
+      className={isFocused ? 'mention mention--focused' : 'mention'}
+    >
       <ProfileImg
         src={avatar}
         size='sm'
@@ -55,10 +60,10 @@ export const ParseComment = ({
   ...rest
 }) => {
   const split = (content || '').split(/(\[\[:mention:\]\[.*?\]\])/g)
-  
+
   const TitleWrapper = title
         ? ({ titleF, children }) => <span title={titleF()}>{children}</span>
-        : React.Fragment
+        : ({ children }) => <>{children}</>
 
   if (split.length === 1) {
     return (
