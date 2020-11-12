@@ -39,13 +39,22 @@ const states = {
 
 const Popup = () => {
   const [state, setState] = useState(states.LOADING)
+
   const [user, setUser] = useState()
+  const [team, setTeam] = useState()
+  const [pages, setPages] = useState()
 
   useEffect(() => {
     onMessage.addListener((message) => {
       switch (message.type) {
       case 'PUB_USER':
         setUser(message.user)
+        break
+      case 'PUB_PAGES':
+        setPages(message.pages)
+        break
+      case 'PUB_TEAM':
+        setTeam(message.team)
         break
       case 'GOOGLE_USER':
         setUser(message.user)
@@ -54,23 +63,22 @@ const Popup = () => {
       }
     })
 
+    sendMessage({ type: 'GET_TEAM' }, team => setTeam(team))
+    sendMessage({ type: 'GET_PAGES' }, pages => setPages(pages))
     sendMessage({ type: 'GET_USER' }, (payload) => {
       const { user, profile } = payload || {}
-
       setUser(Object.assign({}, user, profile))
-      setState(user ? states.DASHBOARD : states.LOGIN)
     })
   }, [])
 
   useEffect(() => {
-    if (!user || !user.uid) return
-
-    user.emailVerified
-      ? setState(states.DASHBOARD)
-      : setState(states.VERIFY_EMAIL)
-  }, [])
-
-  console.log('user //', user)
+    sw({
+      [user && user.uid]: _ => setState(states.VERIFY_EMAIL),
+      [user && user.uid && user.emailVerified]: _ => setState(states.DASHBOARD),
+      [state === states.REGISTER]: _ => _,
+      default: _ => setState(states.LOGIN)
+    })(true)
+  }, [user, team, pages])
 
   return (
     <>
@@ -106,14 +114,16 @@ const Popup = () => {
         [states.DASHBOARD]: () => (
           <>
             <Dashboard
+              team={team}
               user={user}
+              pages={pages}
             />
           </>
         )
       })(state)}
 
       {
-        user && user.emailVerified && (
+        state !== states.LOGIN && user && user.emailVerified && (
           <Button
             onClick={() =>
               firebase

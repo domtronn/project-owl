@@ -40,18 +40,18 @@ const logBoW = (...msg) => console.log(...msg, 'margin-top: 8px; padding: 2px; b
 /** Smart log based on the scope of the message */
 const sLog = (m, ...rest) => sw({
   // Log green for CREATE & UPDATE
-  [m.startsWith('CREATE')]: _ => logGreen(`⭐️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('UPDATE')]: _ => logGreen(`♻️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('CREATE')]: _ => logGreen(`⭐️ %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('UPDATE')]: _ => logGreen(`♻️ %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
   // Log red for DELETES
-  [m.startsWith('DELETE')]: _ => logRed(`☠️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('DELETE')]: _ => logRed(`☠️ %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
 
   // Log magenta for INCOMING requests from snapshot changes & clients
-  [m.startsWith('GET')]: _ => logMagenta(`✉️ %c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.includes('_CHANGE')]: _ => logMagenta(`📣 %c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.includes('_PUBLISH')]: _ => logBlue(`🔊 %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('GET')]: _ => logMagenta(`✉️ %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_CHANGE')]: _ => logMagenta(`📣 %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.includes('_PUBLISH')]: _ => logBlue(`🔊 %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
 
-  [m.startsWith('LISTEN')]: _ => logBoW(`👂 %c${m.replace(' // ', ' //%c ')}`, ...rest),
-  [m.startsWith('BILLING')]: _ => logYellow(`💰 %c${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('LISTEN')]: _ => logBoW(`👂 %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
+  [m.startsWith('BILLING')]: _ => logYellow(`💰 %c${new Date().toISOString()} ${m.replace(' // ', ' //%c ')}`, ...rest),
   default: _ => log(m, ...rest)
 })(true)
 
@@ -106,7 +106,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sLog('GET_TEAM // Fetching team for user')
 
     const teamId = (UserState.team || {}).id
-    const uid = (UserState.user || {}).uid
+    const uid = (UserState.userProfile || {}).team
 
     if (teamId !== uid) sLog('GET_TEAM // Team ID did not match users current team')
     if (teamId !== uid) return sendResponse({})
@@ -418,7 +418,7 @@ const publishPageUpdate = (page) => {
   const { href } = page
   const message = { type: 'PUB_PAGE', page }
 
-  chrome.runtime.sendMessage(message)
+  chrome.runtime.sendMessage({ type: 'PUB_PAGES', pages: (UserState.pages || []).map(({ href }) => href) })
   Promise
     .all([
       queryTabs(href) // Exact URL matches
@@ -429,7 +429,7 @@ const publishPageUpdate = (page) => {
     ])
     .then(tabs => {
       const totaltabs = tabs.reduce((acc, it) => acc.concat(it), [])
-      console.log(href, tabs)
+      if (!totaltabs.length) return
 
       sLog(`PAGE_PUBLISH // Publishing change to ${totaltabs.length} totaltabs`)
       log(page)
@@ -446,6 +446,13 @@ const publishAuthUpdate = (user) => {
     const message = { type: 'PUB_USER', user }
 
     chrome.runtime.sendMessage(message)
+
+    if (!user) // User logged out, publish empty data
+    {
+      chrome.runtime.sendMessage({ type: 'PUB_PAGES', pages: [] })
+      chrome.runtime.sendMessage({ type: 'PUB_TEAM', team: null })
+    }
+
     tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, message))
   })
 }
@@ -465,9 +472,10 @@ const publishTeamUpdate = (href, team, users) => {
       ,queryTabs(url + '#*?*') // URLS with both query and search params
     ])
     .then(tabs => {
-      console.log(href, tabs)
       const totaltabs = tabs.reduce((acc, it) => acc.concat(it), [])
-      sLog(`TEAM_PUBLISH // Publishing change to ${totaltabs.length} tabs`)
+      if (!totaltabs.length) return
+
+      sLog(`TEAM_PUBLISH // Publishing team data for ${href} to ${totaltabs.length} tabs`)
       log(team, users)
 
       totaltabs.forEach(tab => chrome.tabs.sendMessage(tab.id, message))

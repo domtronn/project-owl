@@ -24,16 +24,16 @@ const focusTab = (url, onFocus, onMiss) =>
         onFocus(activeTab.id)
       })
 
-export default ({ user }) => {
+export default ({ user = {}, team = {}, pages = [] }) => {
   const [mentions, setMentions] = useState([])
-  const [pages, setPages] = useState([])
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, m => setMentions(m || []))
-    chrome.runtime.sendMessage({ type: 'GET_PAGES' }, p => setPages(p || []))
-  }, [mentions.length, pages.length])
+    if (!team || !team.id) return
+    if (!user || !user.uid) return
+    if (!pages.length) return
 
-  if (!mentions || !mentions.length) return null
+    chrome.runtime.sendMessage({ type: 'GET_MENTIONS' }, m => setMentions(m || []))
+  }, [pages.length, user, team])
 
   return (
     <>
