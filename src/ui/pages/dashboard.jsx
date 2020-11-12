@@ -73,9 +73,8 @@ export default ({ user = {}, team = {}, pages = [] }) => {
                 initial='hidden'
                 animate='visible'
                 transition={{
-                  delay: key / 3,
                   type: 'spring',
-                  stiffness: 600
+                  stiffness: 300
                 }}
                 variants={{
                   visible: { y: 0, opacity: 1 },
@@ -120,7 +119,7 @@ export default ({ user = {}, team = {}, pages = [] }) => {
                 initial='hidden'
                 animate='visible'
                 transition={{
-                  delay: i / 4,
+                  delay: (i + 1) / 4,
                   type: 'spring',
                   stiffness: 600
                 }}
