@@ -126,13 +126,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   case 'GET_MENTIONS': {
-    // TODO: Filter out mentions if you've responded after the mention
-
     sLog('GET_MENTIONS // Fetching mentions of current user')
     const pages = UserState.pages
     const uid = UserState.user.uid
 
-    const mentions = pages
+    const mentions = (pages || [])
           .reduce((acc, page) => {
             const { href, threads } = page
 
@@ -412,16 +410,32 @@ setInterval(() => {
 
 let listeners = []
 
-const publishPageUpdate = (page) => {
-  chrome.tabs.query({ url: page.href + '*' }, tabs => {
-    sLog(`PAGE_PUBLISH // Publishing change to ${tabs.length} tabs`)
-    log(page)
+const queryTabs = (url) => new Promise((resolve) => {
+  chrome.tabs.query({ url }, resolve)
+})
 
-    tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
-      type: 'PUB_PAGE',
-      page
-    }))
-  })
+const publishPageUpdate = (page) => {
+  const { href } = page
+  const message = { type: 'PUB_PAGE', page }
+
+  chrome.runtime.sendMessage(message)
+  Promise
+    .all([
+      queryTabs(href) // Exact URL matches
+      ,queryTabs(href + '?*') // URLs with query params
+      ,queryTabs(href + '#*') // URLs with search params
+      ,queryTabs(href + '?*#*') // URLS with both query and search params
+      ,queryTabs(href + '#*?*') // URLS with both query and search params
+    ])
+    .then(tabs => {
+      const totaltabs = tabs.reduce((acc, it) => acc.concat(it), [])
+      console.log(href, tabs)
+
+      sLog(`PAGE_PUBLISH // Publishing change to ${totaltabs.length} totaltabs`)
+      log(page)
+
+      totaltabs.forEach(tab => chrome.tabs.sendMessage(tab.id, message))
+    })
 }
 
 const publishAuthUpdate = (user) => {
@@ -429,24 +443,35 @@ const publishAuthUpdate = (user) => {
     sLog(`AUTH_PUBLISH // Publishing change to ${tabs.length} tabs`)
     log(user)
 
-    tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
-      type: 'PUB_USER',
-      user
-    }))
+    const message = { type: 'PUB_USER', user }
+
+    chrome.runtime.sendMessage(message)
+    tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, message))
   })
 }
 
 const publishTeamUpdate = (href, team, users) => {
-  chrome.tabs.query({ url: href + '*'}, tabs => {
-    sLog(`TEAM_PUBLISH // Publishing change to ${tabs.length} tabs`)
-    log(team, users)
+  const { origin, pathname } = new URL(href)
+  const url = origin + pathname
+  const message = { type: 'PUB_TEAM', team, users }
+  chrome.runtime.sendMessage(message)
 
-    tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, {
-      type: 'PUB_TEAM',
-      team,
-      users
-    }))
-  })
+  Promise
+    .all([
+      queryTabs(url) // Exact URL matches
+      ,queryTabs(url + '?*') // URLs with query params
+      ,queryTabs(url + '#*') // URLs with search params
+      ,queryTabs(url + '?*#*') // URLS with both query and search params
+      ,queryTabs(url + '#*?*') // URLS with both query and search params
+    ])
+    .then(tabs => {
+      console.log(href, tabs)
+      const totaltabs = tabs.reduce((acc, it) => acc.concat(it), [])
+      sLog(`TEAM_PUBLISH // Publishing change to ${totaltabs.length} tabs`)
+      log(team, users)
+
+      totaltabs.forEach(tab => chrome.tabs.sendMessage(tab.id, message))
+    })
 }
 
 const readSnapshot = snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
