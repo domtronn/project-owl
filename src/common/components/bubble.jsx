@@ -10,7 +10,8 @@ export const Bubble = ({
   delay = 0,
   resolved = false,
   isOpen = false,
-  onClick = _ => _
+  onClick = _ => _,
+  ...rest
 }) => {
   if (!x || !y) return null
 
@@ -29,6 +30,7 @@ export const Bubble = ({
       </AnimatePresence>
 
       <motion.div
+        {...rest}
         variants={{
           hidden: { y: 20, opacity: 0 },
           show: { y: 0, opacity: 1 }

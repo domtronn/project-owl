@@ -45,6 +45,9 @@ const ContentV2 = () => {
   const [initThreads, setInitThreads] = useState(true)
   const [currThread, setCurrThread] = useState()
 
+  // TODO: static bubble
+  // const staticBubbleRef = useRef(null)
+
   const baseCtx = {
     teamId: team.id,
     pageId: page.id,
@@ -60,8 +63,8 @@ const ContentV2 = () => {
 
   /** Listen to change events */
   useEffect(() => {
-    onMessage
-      .addListener(({ type, ...data }) => sw({
+    const handleMessage = function ({ type, ...data }) {
+      return sw({
         PUB_USER: ({ user }) => {
           console.log('setUser', new Date())
           setMe(user || {})
@@ -76,12 +79,24 @@ const ContentV2 = () => {
           setUsers(users || {})
         },
 
+        TOGGLE_MODE: () => {
+          setState(
+            state === states.EDIT
+              ? states.VIEW
+              : states.EDIT
+          )
+        },
+
         OPEN_THREAD: ({ id }) => {
           console.log('openThread', id)
           setCurrThread(id)
         }
-      })(type, data))
-  }, [])
+      })(type, data)
+    }
+
+    onMessage.addListener(handleMessage)
+    return () => onMessage.removeListener(handleMessage)
+  }, [state])
 
   useLayoutEffect(() => {
     function updateSize () {
@@ -109,29 +124,7 @@ const ContentV2 = () => {
 
   /** Don't activate if user logged out or page not present */
   if (!me.uid) return null
-
-  if (!page.id) {
-    return (
-      <Card
-        style={{
-          position: 'fixed',
-          right: '32px',
-          bottom: '32px'
-        }}
-      >
-        <Button
-          variant='primary'
-          onClick={() => sendMessage({
-            type: 'CREATE_PAGE',
-            href: window.location.href,
-            ctx: baseCtx
-          })}
-        >
-          Create new page
-        </Button>
-      </Card>
-    )
-  }
+  if (!page.id) return null
 
   return (
     <UsersProvider value={users}>
@@ -148,35 +141,52 @@ const ContentV2 = () => {
       >
 
         {state === states.EDIT && (
-          <div
-            onMouseDown={e => {
-              const { pageX, pageY } = e
-              const thread = {
-                id: uuid(),
-                pageId: page.id,
-                pageWidth: size[0],
-                pageX,
-                pageY
-              }
+          <>
+            <div
+              id='COMMENTABLE_ADD_BUBBLE'
+              className='bubble'
+              style={{ transform: 'skew(-10deg)', zIndex: 0 }}
+            />
 
-              setPage({
-                ...page,
-                threads: {
-                  ...page.threads,
-                  [thread.id]: thread
+            <div
+              onMouseMove={e => {
+                console.log(e.pageX, e.pageY)
+
+                const el = document.getElementById('COMMENTABLE_ADD_BUBBLE')
+                el.style.top = e.pageY + 'px'
+                el.style.left = e.pageX + 'px'
+              }}
+
+              onMouseDown={e => {
+                const { pageX, pageY } = e
+                const thread = {
+                  id: uuid(),
+                  pageId: page.id,
+                  pageWidth: size[0],
+                  pageX,
+                  pageY
                 }
-              })
-              setCurrThread(thread.id)
-            }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              cursor: 'copy'
-            }}
-          />
+
+                setPage({
+                  ...page,
+                  threads: {
+                    ...page.threads,
+                    [thread.id]: thread
+                  }
+                })
+                setCurrThread(thread.id)
+                setState(states.VIEW)
+              }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                cursor: 'copy'
+              }}
+            />
+          </>
         )}
 
         <Card
@@ -191,7 +201,7 @@ const ContentV2 = () => {
             {state === states.EDIT && 'Edit mode'}
           </p>
           <Toggle
-            initial={state === state.EDIT}
+            initial={state === states.EDIT}
             onToggle={() => setState(
               state === states.EDIT
                 ? states.VIEW
@@ -208,7 +218,18 @@ const ContentV2 = () => {
               return (
                 <Bubble
                   key={id || `unknown--${i}`}
-                  onClick={_ => setCurrThread(currThread === id ? null : id)}
+                  onClick={_ => {
+                    setCurrThread(currThread === id ? null : id)
+
+                    if (!threadData.created) {
+                      // FIXME: This only evaulates for the bubble you're clicked on not other bubble
+                      // Thread has not been created so we should delete this from the page
+                      const { threads } = page
+                      delete threads[id]
+                      setPage({ ...page, threads })
+                    }
+                  }}
+
                   isOpen={id === currThread}
 
                   resolved={threadData.resolved}

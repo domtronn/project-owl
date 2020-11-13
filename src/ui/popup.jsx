@@ -22,6 +22,10 @@ import { Button } from '../common/components/button'
 
 import sw from '../app/utils/switch'
 
+import {
+  MdCreate as Plus
+} from 'react-icons/md'
+
 const { sendMessage, onMessage } = chrome.runtime
 const { useEffect, useState } = React
 const states = {
@@ -57,6 +61,16 @@ const Popup = () => {
   const [user, setUser] = useState()
   const [team, setTeam] = useState()
   const [pages, setPages] = useState()
+
+  const [currPage, setCurrPage] = useState()
+
+  useEffect(() => {
+    // Set the current page URL used for create new page button
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      const { origin, pathname } = new URL(tab.url)
+      setCurrPage(origin + pathname)
+    })
+  }, [])
 
   useEffect(() => {
     onMessage.addListener((message) => {
@@ -140,6 +154,25 @@ const Popup = () => {
           </>
         )
       })(state)}
+
+      {
+        state !== states.LOGIN && user && user.emailVerified && pages && pages.length && !pages.includes(currPage) && (
+          <Button
+            variant='primary'
+            onClick={() => sendMessage({
+              type: 'CREATE_PAGE',
+              href: currPage,
+              ctx: {
+                teamId: team.id,
+                userId: user.uid
+              }
+            })}
+          >
+            Create new page
+            <Plus style={{ marginBottom: -2, marginLeft: 6, marginRight: -11 }} />
+          </Button>
+        )
+      }
 
       {
         state !== states.LOGIN && user && user.emailVerified && (
