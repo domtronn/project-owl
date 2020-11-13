@@ -48,6 +48,7 @@
 .commentable .t,
 .commentable p
 {
+  font-size: var(--t-rg);
   line-height: 20px;
   margin: 0;
   color: var(--black);

@@ -98,6 +98,12 @@ const ContentV2 = () => {
     return () => onMessage.removeListener(handleMessage)
   }, [state])
 
+  useEffect(() => {
+    function setMousePos (e) { window.currMouse = [e.pageX, e.pageY] }
+    document.addEventListener('mousemove', setMousePos)
+    return () => document.removeEventListener('mousemove', setMousePos)
+  }, [])
+
   useLayoutEffect(() => {
     function updateSize () {
       setSize([window.outerWidth, window.outerHeight])
@@ -142,16 +148,27 @@ const ContentV2 = () => {
 
         {state === states.EDIT && (
           <>
-            <div
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+
               id='COMMENTABLE_ADD_BUBBLE'
-              className='bubble'
-              style={{ transform: 'skew(-10deg)', zIndex: 0 }}
-            />
+              style={{
+                position: 'absolute',
+                top: (window.currMouse || [])[1],
+                left: (window.currMouse || [])[0],
+                zIndex: 0
+              }}
+            >
+              <div
+                className='bubble'
+                style={{ transform: 'skew(-10deg)' }}
+              />
+            </motion.div>
 
             <div
               onMouseMove={e => {
-                console.log(e.pageX, e.pageY)
-
                 const el = document.getElementById('COMMENTABLE_ADD_BUBBLE')
                 el.style.top = e.pageY + 'px'
                 el.style.left = e.pageX + 'px'
