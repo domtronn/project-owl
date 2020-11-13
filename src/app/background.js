@@ -63,6 +63,19 @@ logYellow('%cCHANGE%c This is used for changes to a document based on an event')
 logMagenta('%cREAD%c This is used for a client request')
 log('\n\n')
 
+chrome.commands.onCommand.addListener((command) => {
+  switch (command) {
+  case 'toggle-edit-view-mode': {
+    chrome.tabs.query({ active: true }, tabs => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_MODE' })
+      })
+    })
+    break
+  }
+  }
+})
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
   case 'GOOGLE_AUTH_USER':
@@ -413,6 +426,25 @@ let listeners = []
 const queryTabs = (url) => new Promise((resolve) => {
   chrome.tabs.query({ url }, resolve)
 })
+
+const publishMessageToCommentablePages = (msg) => {
+  (UserState.pages || []).forEach(({ href }) => {
+    Promise
+      .all([
+        queryTabs(href) // Exact URL matches
+        ,queryTabs(href + '?*') // URLs with query params
+        ,queryTabs(href + '#*') // URLs with search params
+        ,queryTabs(href + '?*#*') // URLS with both query and search params
+        ,queryTabs(href + '#*?*') // URLS with both query and search params
+      ])
+      .then(tabs => {
+        const totaltabs = tabs.reduce((acc, it) => acc.concat(it), [])
+        if (!totaltabs.length) return
+
+        totaltabs.forEach(tab => chrome.tabs.sendMessage(tab.id, msg))
+      })
+  })
+}
 
 const publishPageUpdate = (page) => {
   const { href } = page

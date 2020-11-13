@@ -41,5 +41,15 @@
         "js/content.js"
       ]
     }
-  ]
+  ],
+
+  "commands": {
+    "toggle-edit-view-mode": {
+      "description": "Toggle between Edit & Add mode",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
+      }
+    }
+  }
 }
