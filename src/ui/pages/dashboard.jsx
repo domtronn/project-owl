@@ -47,6 +47,23 @@ const focusTab = (url, onFocus, onMiss) =>
         onFocus(activeTab.id)
       })
 
+const animVariants = {
+  visible: { y: 0, opacity: 1 },
+  hidden: { y: 20, opacity: 0 }
+}
+
+const animTransition = {
+  type: 'spring',
+  stiffness: 500
+}
+
+const animProps = (delay) => ({
+  initial: 'hidden',
+  animate: 'visible',
+  transition: { ...animTransition, delay: delay / 4 },
+  variants: animVariants
+})
+
 export default ({ user = {}, team = {}, pages = [] }) => {
   const [mentions, setMentions] = useState([])
 
@@ -61,26 +78,17 @@ export default ({ user = {}, team = {}, pages = [] }) => {
   if (!user || !user.uid) return null
 
   return (
-    <>
-      <h6>Quick links</h6>
-      <ul>
+    <motion.div>
+      <motion.h6 {...animProps(0)}>Quick links</motion.h6>
+      <motion.ul
+        {...animProps(1)}
+      >
         {
-          pages.length === 0
+          pages === null
             ? <LinkSkel />
             : pages
             .map((href, key) => (
-              <motion.li
-                initial='hidden'
-                animate='visible'
-                transition={{
-                  type: 'spring',
-                  stiffness: 300
-                }}
-                variants={{
-                  visible: { y: 0, opacity: 1 },
-                  hidden: { y: 20, opacity: 0 }
-                }}
-
+              <li
                 key={key}
                 style={{
                   overflow: 'hidden',
@@ -103,31 +111,20 @@ export default ({ user = {}, team = {}, pages = [] }) => {
                     {href}
                   </a>
                 </span>
-              </motion.li>
+              </li>
             ))
         }
-      </ul>
+      </motion.ul>
 
-      <h6>Mentions</h6>
+      <motion.h6 {...animProps(2)}>Mentions</motion.h6>
       <ul>
         {
-          mentions.length === 0
+          mentions === null
             ? <MentionSkel />
             : mentions
             .map(({ href, content, created, threadId, ...mention }, i) => (
               <motion.li
-                initial='hidden'
-                animate='visible'
-                transition={{
-                  delay: (i + 1) / 4,
-                  type: 'spring',
-                  stiffness: 600
-                }}
-                variants={{
-                  visible: { y: 0, opacity: 1 },
-                  hidden: { y: 20, opacity: 0 }
-                }}
-
+                {...animProps(3 + i)}
                 key={i}
               >
                 <Comment
@@ -165,6 +162,6 @@ export default ({ user = {}, team = {}, pages = [] }) => {
               </motion.li>
             ))}
       </ul>
-    </>
+    </motion.div>
   )
 }
