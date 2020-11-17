@@ -10,21 +10,14 @@ import {
 
 import { motion } from 'framer-motion'
 
-import { RadioBar } from '../../common/components/radio-bar'
 import { Comment } from '../../common/components/comment'
 import Skeleton from '../../common/components/skeleton'
 
-const Emoji = ({ symbol, label }) => (
-  <span
-    role='img'
-    aria-label={label}
-  >
-    {symbol}
-  </span>
-)
-
 import date from '../../app/utils/date'
 
+/**
+ * Skeleton definitions for loading states
+ */
 const LinkSkel = () => Array(3).fill().map((_, i) => (
   <li key={i} style={{ display: 'inline-flex', alignItems: 'center', width: '100%' }}>
     <Skeleton.Avatar size='xs' style={{ margin: '0 8px 0 0' }} />
@@ -89,6 +82,7 @@ export default ({ user = {}, team = {}, pages = [] }) => {
 
   return (
     <motion.div>
+
       <motion.h6 {...animProps(0)}>Quick links</motion.h6>
       <motion.ul
         {...animProps(1)}
@@ -173,15 +167,6 @@ export default ({ user = {}, team = {}, pages = [] }) => {
             ))}
       </ul>
 
-      <motion.div {...animProps(4 + mentions.length)}>
-        <RadioBar
-          options={[
-            { label: 'All', value: 'all' },
-            { label: () => <Emoji symbol='📱' label='Mobile' />, value: 'mobile' },
-            { label: () => <Emoji symbol='🖥' label='Desktop' />, value: 'desktop' },
-          ]}
-        />
-      </motion.div>
     </motion.div>
   )
 }

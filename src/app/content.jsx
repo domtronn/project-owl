@@ -17,6 +17,7 @@ import CommentCard from '../common/components/comment-card'
 import { UsersProvider } from '../common/providers/users-provider'
 
 import sw from './utils/switch'
+import log from './utils/log'
 import date from './utils/date'
 
 const normalise = (x, viewport) => {
@@ -44,6 +45,7 @@ const ContentV2 = () => {
 
   const [initThreads, setInitThreads] = useState(true)
   const [currThread, setCurrThread] = useState()
+  const [threadFilter, setThreadFilter] = useState(i => i)
 
   // TODO: static bubble
   // const staticBubbleRef = useRef(null)
@@ -54,27 +56,29 @@ const ContentV2 = () => {
     userId: me.uid
   }
 
-  console.log('------------------------------')
-  console.log('ctx//', baseCtx)
-  console.log('page//', page)
-  console.log('me//', me)
-  console.log('users//', users)
-  console.log('team//', team)
+  log('------------------------------')
+  log('ctx//', baseCtx)
+  log('page//', page)
+  log('me//', me)
+  log('users//', users)
+  log('team//', team)
+
+  console.log('threadFilter', threadFilter)
 
   /** Listen to change events */
   useEffect(() => {
     const handleMessage = function ({ type, ...data }) {
       return sw({
         PUB_USER: ({ user }) => {
-          console.log('setUser', new Date())
+          log('setUser', new Date())
           setMe(user || {})
         },
         PUB_PAGE: ({ page }) => {
-          console.log('setPage', new Date())
+          log('setPage', new Date())
           setPage(page || {})
         },
         PUB_TEAM: ({ users, team }) => {
-          console.log('setTeam', new Date())
+          log('setTeam', new Date())
           setTeam(team || {})
           setUsers(users || {})
         },
@@ -87,8 +91,10 @@ const ContentV2 = () => {
           )
         },
 
+        SET_FILTER: ({ filter }) => setThreadFilter(filter),
+
         OPEN_THREAD: ({ id }) => {
-          console.log('openThread', id)
+          log('openThread', id)
           setCurrThread(id)
         }
       })(type, data)
@@ -230,6 +236,11 @@ const ContentV2 = () => {
         {
           Object
             .values(page.threads || {})
+            .filter(({ pageWidth }) => sw({
+              mobile: pageWidth < 520,
+              desktop: pageWidth >= 520,
+              default: true
+            })(threadFilter, pageWidth))
             .map(({ id, ...threadData }, i) => {
               const { pageX, pageY, pageWidth } = threadData
               return (

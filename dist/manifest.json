@@ -21,6 +21,8 @@
   },
   "permissions": [
     "identity",
+    "storage",
+    "debugger",
     "notifications",
     "https://*/*"
   ],

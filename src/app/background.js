@@ -63,6 +63,14 @@ logYellow('%cCHANGE%c This is used for changes to a document based on an event')
 logMagenta('%cREAD%c This is used for a client request')
 log('\n\n')
 
+chrome.storage.sync.get({ debugMode: false }, ({ debugMode }) => {
+  if (debugMode) return
+
+  log('Run this command to enable debugMode - ')
+  log('chrome.storage.sync.set({ debugMode: true }, () => console.log(\'DebugMode is set\')) ')
+  log('\n\n')
+})
+
 chrome.commands.onCommand.addListener((command) => {
   switch (command) {
   case 'toggle-edit-view-mode': {

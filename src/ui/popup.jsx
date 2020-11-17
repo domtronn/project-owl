@@ -19,12 +19,22 @@ import Dashboard from './pages/dashboard'
 
 import Skeleton from '../common/components/skeleton'
 import { Button } from '../common/components/button'
+import { RadioBar } from '../common/components/radio-bar'
 
 import sw from '../app/utils/switch'
 
 import {
   MdCreate as Plus
 } from 'react-icons/md'
+
+const Emoji = ({ symbol, label }) => (
+  <span
+    role='img'
+    aria-label={label}
+  >
+    {symbol}
+  </span>
+)
 
 const { sendMessage, onMessage } = chrome.runtime
 const { useEffect, useState } = React
@@ -63,6 +73,12 @@ const Popup = () => {
   const [pages, setPages] = useState()
 
   const [currPage, setCurrPage] = useState()
+
+  const activePage = (pages || []).find(({ href }) => href === currPage)
+
+  console.log(activePage)
+  console.log(pages)
+  console.log(currPage)
 
   useEffect(() => {
     // Set the current page URL used for create new page button
@@ -105,11 +121,24 @@ const Popup = () => {
     })
   }, [])
 
-  console.log(loading)
-
   return (
     <>
       <em>commentable</em>
+
+      {state === states.DASHBOARD && pages && pages.length && pages.includes(currPage) && (
+        <RadioBar
+          onChange={val => {
+            chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+              chrome.tabs.sendMessage(tab.id, { type: 'SET_FILTER', filter: val })
+            })
+          }}
+          options={[
+            { label: 'All', value: 'all' },
+            { label: () => <Emoji symbol='📱' label='Mobile' />, value: 'mobile' },
+            { label: () => <Emoji symbol='🖥' label='Desktop' />, value: 'desktop' },
+          ]}
+        />
+      )}
 
       {sw({
         [states.LOGIN]: () => (
