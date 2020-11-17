@@ -341,7 +341,7 @@ const mountId = 'COMMENTABLE_MOUNT'
 if (!document.getElementById(mountId)) {
   const mountNode = document.createElement('div')
   mountNode.setAttribute('id', mountId)
-  mountNode.classList.add('commentable')
+  mountNode.classList.add('root__Y29tbWVudGFibGUx')
 
   document
     .getElementsByTagName('body')[0]

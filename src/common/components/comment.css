@@ -1,20 +1,20 @@
-.commentable .comment {
+.root__Y29tbWVudGFibGUx .comment {
   text-align: left;
   margin-bottom: 8px;
 }
 
-.commentable .comment__img,
-.commentable .comment__content
+.root__Y29tbWVudGFibGUx .comment__img,
+.root__Y29tbWVudGFibGUx .comment__content
 {
   vertical-align: middle;
   display: inline-block;
 }
 
-.commentable .comment__content * {
+.root__Y29tbWVudGFibGUx .comment__content * {
   margin: 0;
   font-size: var(--t-sm);
   line-height: 16px;
 }
 
-.commentable .comment__content > p { color: var(--black); }
-.commentable .comment__content > p + p { color: var(--lightgrey); }
+.root__Y29tbWVudGFibGUx .comment__content > p { color: var(--black); }
+.root__Y29tbWVudGFibGUx .comment__content > p + p { color: var(--lightgrey); }

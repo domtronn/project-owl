@@ -1,5 +1,5 @@
-.commentable input,
-.commentable .editor
+.root__Y29tbWVudGFibGUx input,
+.root__Y29tbWVudGFibGUx .editor
 {
   display: block;
   min-height: 48px;
@@ -16,36 +16,36 @@
   outline: none;
 }
 
-.commentable .editor {
+.root__Y29tbWVudGFibGUx .editor {
   padding: 16px;
   min-height: auto;
 }
 
-.commentable input::placeholder {
+.root__Y29tbWVudGFibGUx input::placeholder {
   color: var(--grey);
 }
 
-.commentable input:focus,
-.commentable .editor--focus
+.root__Y29tbWVudGFibGUx input:focus,
+.root__Y29tbWVudGFibGUx .editor--focus
 {
   border: 1px solid var(--primary);
 }
 
-.commentable .editor {
+.root__Y29tbWVudGFibGUx .editor {
   position: relative;
   cursor: text;
 }
 
-.commentable .editor span {
+.root__Y29tbWVudGFibGUx .editor span {
   font-size: var(--t-rg);
 }
 
-.commentable .editor .public-DraftEditorPlaceholder-root {
+.root__Y29tbWVudGFibGUx .editor .public-DraftEditorPlaceholder-root {
   color: var(--grey);
   position: absolute;
 }
 
-.commentable .editor .editor__mention {
+.root__Y29tbWVudGFibGUx .editor .editor__mention {
   color: var(--primary);
   font-size: var(--t-rg);
 }

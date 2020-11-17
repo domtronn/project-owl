@@ -1,4 +1,4 @@
-.commentable .bubble {
+.root__Y29tbWVudGFibGUx .bubble {
   position: absolute;
 
   margin-left: -16px;
@@ -15,10 +15,10 @@
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.75);
 }
 
-.commentable .bubble:hover {
+.root__Y29tbWVudGFibGUx .bubble:hover {
   cursor: pointer;
 }
 
-.commentable .bubble--resolved {
+.root__Y29tbWVudGFibGUx .bubble--resolved {
   background-color: var(--primary-faded);
 }

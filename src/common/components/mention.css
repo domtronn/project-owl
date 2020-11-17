@@ -1,11 +1,11 @@
-.commentable .mention img {
+.root__Y29tbWVudGFibGUx .mention img {
   height: 24px;
   width: 24px;
   border-radius: 50%;
   margin-right: 8px;
 }
 
-.commentable .mention {
+.root__Y29tbWVudGFibGUx .mention {
   width: 100%;
   padding: 12px 8px;
   display: flex;
@@ -13,24 +13,24 @@
   cursor: pointer;
 }
 
-.commentable .mention:last-child {
+.root__Y29tbWVudGFibGUx .mention:last-child {
   margin-bottom: 0;
 }
 
-.commentable .mention--focused {
+.root__Y29tbWVudGFibGUx .mention--focused {
   background-color: var(--light);
   border-radius: 4px;
 }
 
-.commentable .mention__emoji.mention--focused {
+.root__Y29tbWVudGFibGUx .mention__emoji.mention--focused {
   color: var(--primary);
 }
 
 
-.commentable .mention__emoji {
+.root__Y29tbWVudGFibGUx .mention__emoji {
   padding: 8px 16px 8px 8px;
 }
 
-.commentable .mention__emoji span {
+.root__Y29tbWVudGFibGUx .mention__emoji span {
   margin-left: 8px;
 }

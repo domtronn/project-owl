@@ -1,20 +1,20 @@
-.commentable .toggle {
+.root__Y29tbWVudGFibGUx .toggle {
   position: relative;
   display: inline-block;
   width: 72px;
   height: 37px;
 }
 
-.commentable .toggle,
-.commentable .toggle__slider,
-.commentable .toggle__slider:before
+.root__Y29tbWVudGFibGUx .toggle,
+.root__Y29tbWVudGFibGUx .toggle__slider,
+.root__Y29tbWVudGFibGUx .toggle__slider:before
 {
   transition: .4s;
 }
 
-.commentable .toggle input { display: none; }
+.root__Y29tbWVudGFibGUx .toggle input { display: none; }
 
-.commentable .toggle__slider {
+.root__Y29tbWVudGFibGUx .toggle__slider {
   position: absolute;
   top: 0;
   left: 0;
@@ -28,7 +28,7 @@
   cursor: pointer;
 }
 
-.commentable .toggle__slider:before {
+.root__Y29tbWVudGFibGUx .toggle__slider:before {
   position: absolute;
   content: "";
   height: 26px;
@@ -40,24 +40,24 @@
   background-color: var(--primary);
 }
 
-.commentable .toggle:hover .toggle__slider:before {
+.root__Y29tbWVudGFibGUx .toggle:hover .toggle__slider:before {
   background-color: var(--primary-darken);
 }
 
 
-.commentable .toggle input:checked + .toggle__slider
+.root__Y29tbWVudGFibGUx .toggle input:checked + .toggle__slider
 {
   background-color: var(--primary);
 }
 
-.commentable .toggle input:checked + .toggle__slider:before
+.root__Y29tbWVudGFibGUx .toggle input:checked + .toggle__slider:before
 {
   transform: translateX(34px);
   background-color: var(--white);
 }
 
 
-.commentable .toggle:hover input:checked + .toggle__slider:before
+.root__Y29tbWVudGFibGUx .toggle:hover input:checked + .toggle__slider:before
 {
   background-color: var(--light);
 }

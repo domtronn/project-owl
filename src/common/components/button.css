@@ -1,4 +1,4 @@
-.commentable button {
+.root__Y29tbWVudGFibGUx button {
   font-weight: 600;
   width: calc(100% + 4px);
   display: block;
@@ -9,7 +9,7 @@
   line-height: 24px;
 }
 
-.commentable button.btn.btn--sm {
+.root__Y29tbWVudGFibGUx button.btn.btn--sm {
   padding: 4px 12px;
   margin: 0;
   width: auto;
@@ -19,7 +19,7 @@
   font-size: var(--t-sm);
 }
 
-.commentable button.btn.btn--md {
+.root__Y29tbWVudGFibGUx button.btn.btn--md {
   padding: 6px 12px;
   margin: 0;
   height: 36px;
@@ -28,8 +28,8 @@
   font-size: var(--t-sm);
 }
 
-.commentable .btn,
-.commentable .btn--disabled.btn:hover
+.root__Y29tbWVudGFibGUx .btn,
+.root__Y29tbWVudGFibGUx .btn--disabled.btn:hover
 {
   text-align: center;
   border-radius: 4px;
@@ -43,44 +43,44 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.commentable .btn:hover {
+.root__Y29tbWVudGFibGUx .btn:hover {
   cursor: pointer;
   background-color: var(--light-darken);
 }
 
-.commentable .btn--primary,
-.commentable .btn--disabled.btn--primary:hover
+.root__Y29tbWVudGFibGUx .btn--primary,
+.root__Y29tbWVudGFibGUx .btn--disabled.btn--primary:hover
 {
   color: var(--white);
   background-color: var(--primary);
 }
 
-.commentable .btn--primary:hover {
+.root__Y29tbWVudGFibGUx .btn--primary:hover {
   background-color: var(--primary-darken);
 }
 
-.commentable .btn:active {
+.root__Y29tbWVudGFibGUx .btn:active {
   border-color: var(--white);
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
 }
 
-.commentable .btn--disabled {
+.root__Y29tbWVudGFibGUx .btn--disabled {
   opacity: 0.25;
 }
 
-.commentable .btn--disabled:hover { cursor: initial; }
+.root__Y29tbWVudGFibGUx .btn--disabled:hover { cursor: initial; }
 
 /** Styling for icons inside of buttons */
-.commentable button svg {
+.root__Y29tbWVudGFibGUx button svg {
   margin-bottom: -2px;
   margin-right: 6px;
 }
 
-.commentable button.btn--sm svg {
+.root__Y29tbWVudGFibGUx button.btn--sm svg {
   margin-bottom: -2px;
   margin-right: 4px;
 }
 
-.commentable button.btn svg {
+.root__Y29tbWVudGFibGUx button.btn svg {
   margin-bottom: -2px;
 }

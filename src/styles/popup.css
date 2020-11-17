@@ -88,18 +88,18 @@ h5 { margin: 32px 0 8px; }
 h6 { margin: 24px 0 4px; }
 
 input, button { margin-bottom: 8px; }
-.commentable p + form,
-.commentable a + button,
-.commentable a + p,
-.commentable button + p { margin-top: 32px; }
+.root__Y29tbWVudGFibGUx p + form,
+.root__Y29tbWVudGFibGUx a + button,
+.root__Y29tbWVudGFibGUx a + p,
+.root__Y29tbWVudGFibGUx button + p { margin-top: 32px; }
 a { margin: 0 8px; }
 
-.commentable ul {
+.root__Y29tbWVudGFibGUx ul {
   margin: 6px 0;
   padding: 0;
 }
 
-.commentable li {
+.root__Y29tbWVudGFibGUx li {
   position: relative;
   margin: 0;
   padding: 8px 0;
@@ -107,16 +107,16 @@ a { margin: 0 8px; }
   border-bottom: 1px solid var(--light-darken);
 }
 
-.commentable li a {
+.root__Y29tbWVudGFibGUx li a {
   margin: 0;
   line-height: 20px;
 }
 
-.commentable a svg {
+.root__Y29tbWVudGFibGUx a svg {
   margin-bottom: -1px;
   margin-right: 6px;
 }
 
-.commentable li:last-child {
+.root__Y29tbWVudGFibGUx li:last-child {
   border-bottom: 0;
 }

@@ -1,36 +1,36 @@
-.commentable .commentcard {
+.root__Y29tbWVudGFibGUx .commentcard {
   position: relative;
   width: 320px;
 }
 
-.commentable .commentcard__resolved {
+.root__Y29tbWVudGFibGUx .commentcard__resolved {
   font-size: var(--t-sm);
   color: var(--grey);
   margin-top: 24px;
   margin-bottom: 8px;
 }
 
-.commentable .commentcard__comment--resolved {
+.root__Y29tbWVudGFibGUx .commentcard__comment--resolved {
   opacity: 0.5;
 }
 
-.commentable .commentcard__comment + input,
-.commentable .commentcard__comment + form
+.root__Y29tbWVudGFibGUx .commentcard__comment + input,
+.root__Y29tbWVudGFibGUx .commentcard__comment + form
 {
   margin-top: 20px;
 }
 
-.commentable .commentcard > form:first-child > input:first-child
+.root__Y29tbWVudGFibGUx .commentcard > form:first-child > input:first-child
 {
   margin-top: 0;
 }
 
-.commentable .commentcard form button
+.root__Y29tbWVudGFibGUx .commentcard form button
 {
   margin-top: 8px;
 }
 
-.commentable .commentcard__resolve {
+.root__Y29tbWVudGFibGUx .commentcard__resolve {
   z-index: 20;
   line-height: 20px;
   font-size: var(--t-rg);
@@ -42,7 +42,7 @@
   text-decoration: none;
 }
 
-.commentable .commentcard__more {
+.root__Y29tbWVudGFibGUx .commentcard__more {
   top: 14px;
   right: 6px;
   z-index: 20;
@@ -53,7 +53,7 @@
   color: var(--grey);
 }
 
-.commentable .commentcard__more__content {
+.root__Y29tbWVudGFibGUx .commentcard__more__content {
   width: 120px;
   position: absolute;
   right: -100px;
@@ -61,12 +61,12 @@
   z-index: 400;
 }
 
-.commentable .commentcard__more:hover {
+.root__Y29tbWVudGFibGUx .commentcard__more:hover {
   cursor: pointer;
   color: var(--primary);
 }
 
-.commentable .commentcard__resolve svg {
+.root__Y29tbWVudGFibGUx .commentcard__resolve svg {
   margin-bottom: -2px;
   margin-right: 6px;
 }

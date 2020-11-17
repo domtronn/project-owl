@@ -1,4 +1,4 @@
-.commentable img.pimg {
+.root__Y29tbWVudGFibGUx img.pimg {
   border-radius: 50%;
   margin-right: 8px;
 
@@ -6,12 +6,12 @@
   height: 32px;
 }
 
-.commentable img.pimg--sm {
+.root__Y29tbWVudGFibGUx img.pimg--sm {
   width: 24px;
   height: 24px;
 }
 
-.commentable img.pimg-- {
+.root__Y29tbWVudGFibGUx img.pimg-- {
   width: 48px;
   height: 48px;
 }

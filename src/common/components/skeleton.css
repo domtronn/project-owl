@@ -3,9 +3,9 @@
     background-position: 520px 0;
   }
 }
-.commentable .s__text,
-.commentable .s__avatar,
-.commentable .s__block
+.root__Y29tbWVudGFibGUx .s__text,
+.root__Y29tbWVudGFibGUx .s__avatar,
+.root__Y29tbWVudGFibGUx .s__block
 {
   background-repeat: no-repeat;
   background-color: var(--light);
@@ -19,7 +19,7 @@
   );
 }
 
-.commentable .s__avatar {
+.root__Y29tbWVudGFibGUx .s__avatar {
   margin: 16px 0;
   width: 48px;
   height: 48px;
@@ -27,18 +27,18 @@
   background-size: 320px 48px;
 }
 
-.commentable .s__avatar--xs { width: 16px; height: 16px; }
-.commentable .s__avatar--sm { width: 32px; height: 32px; }
-.commentable .s__avatar--lg { width: 64px; height: 64px; }
+.root__Y29tbWVudGFibGUx .s__avatar--xs { width: 16px; height: 16px; }
+.root__Y29tbWVudGFibGUx .s__avatar--sm { width: 32px; height: 32px; }
+.root__Y29tbWVudGFibGUx .s__avatar--lg { width: 64px; height: 64px; }
 
-.commentable .s__block {
+.root__Y29tbWVudGFibGUx .s__block {
   margin: 16px 0;
   width: 100%;
   min-height: 96px;
   border-radius: 4px;
 }
 
-.commentable .s__text {
+.root__Y29tbWVudGFibGUx .s__text {
   margin: 16px 0;
   max-width: 320px;
   width: 100%;
@@ -46,6 +46,6 @@
   border-radius: 7px;
 }
 
-.commentable .s__text--sm { border-radius: 6px; height: 12px; }
-.commentable .s__text--md { border-radius: 8px; height: 16px; }
-.commentable .s__text--lg { border-radius: 12px; height: 24px; }
+.root__Y29tbWVudGFibGUx .s__text--sm { border-radius: 6px; height: 12px; }
+.root__Y29tbWVudGFibGUx .s__text--md { border-radius: 8px; height: 16px; }
+.root__Y29tbWVudGFibGUx .s__text--lg { border-radius: 12px; height: 24px; }

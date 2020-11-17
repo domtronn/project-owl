@@ -1,20 +1,20 @@
-.commentable .card {
+.root__Y29tbWVudGFibGUx .card {
   padding: 16px;
   border-radius: 8px;
   background: var(--white);
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.commentable .card.card--popover {
+.root__Y29tbWVudGFibGUx .card.card--popover {
   overflow: hidden;
   position: absolute;
 }
 
-.commentable .card.card--fixed {
+.root__Y29tbWVudGFibGUx .card.card--fixed {
   min-width: 260px;
 }
 
-.commentable .card.card--narrow {
+.root__Y29tbWVudGFibGUx .card.card--narrow {
   margin: 0;
   padding: 0;
 }
