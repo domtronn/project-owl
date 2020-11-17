@@ -10,8 +10,18 @@ import {
 
 import { motion } from 'framer-motion'
 
+import { RadioBar } from '../../common/components/radio-bar'
 import { Comment } from '../../common/components/comment'
 import Skeleton from '../../common/components/skeleton'
+
+const Emoji = ({ symbol, label }) => (
+  <span
+    role='img'
+    aria-label={label}
+  >
+    {symbol}
+  </span>
+)
 
 import date from '../../app/utils/date'
 
@@ -162,6 +172,16 @@ export default ({ user = {}, team = {}, pages = [] }) => {
               </motion.li>
             ))}
       </ul>
+
+      <motion.div {...animProps(4 + mentions.length)}>
+        <RadioBar
+          options={[
+            { label: 'All', value: 'all' },
+            { label: () => <Emoji symbol='📱' label='Mobile' />, value: 'mobile' },
+            { label: () => <Emoji symbol='🖥' label='Desktop' />, value: 'desktop' },
+          ]}
+        />
+      </motion.div>
     </motion.div>
   )
 }
